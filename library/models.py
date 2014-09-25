@@ -22,6 +22,7 @@ class auto_model(models.Model):
 # 			self.name=self.object.__class__.__name__+"_"+self.object.id
 
 	def get_fields(self):
+		f=[]
 		for field in self._meta.fields:
 			if field.get_internal_type() == "ForeignKey" and getattr(self,field.name)!=None :
 				tmp=field.related.parent_model.objects.get(pk=field.value_to_string(self))
@@ -93,6 +94,39 @@ class Library(auto_model):
 # 	portion_pool_(%)
 	lld = models.IntegerField(null=True,blank=True)
 	replicate = models.IntegerField(default=1)
+	def get_status(self):
+# 		if ():
+		return True
+		return False
+	def get_class_status(self):
+		if self.get_status(): return "success"
+		return "danger"
+	def has_status(self): return True
+	def has_etxra_list_fields(self): return True
+
+	def get_extra_list_fields(self):
+		row=""
+		for fields in self.get_list_view_fields():
+			row=row+("<td>{}</td>").format(fields)
+		return mark_safe(row)
+
+	def get_extra_list_fields_headers(self):
+		header=""
+		for fields in self.get_list_view_fields(True):
+			header=header+("<th data-defaultsort='disabled'>{}</th>").format(fields)
+		return mark_safe(header)
+
+	def get_name(self):return self.library_id
+
+	def get_list_view_fields(self,name=False):
+		field_list=["library_id","reads_type","flowcell_id","determined_reads","average_phred","qc_report_url","ercc_r2","ercc_url"]
+		f=[]
+		for field in self._meta.fields:
+			if field.name in field_list:
+				if name:f.append(field.verbose_name)
+				else : f.append(getattr(self,field.name))
+		return f
+
 
 class Tag(auto_model):
 	libraries_group = models.ManyToManyField(Library, through='TagValues',through_fields=('tag','library'))
