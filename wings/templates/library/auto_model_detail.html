@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block title %}
+<ul class="nav nav-pills nav-left">
+<li><a href="#" class="no_link"><strong><i class="glyphicon glyphicon-dashboard"></i>{{object.get_meta_name}}</strong></a></li>
+</ul>
+<hr>
+ {% endblock %}
+
+{% block content %}
+
+<table class="table table-striped">
+    <thead>
+      <tr><th colspan="2"><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit"></i> Edit</a>
+      <a href="{{object.get_absolute_delete_url}}" > <span class="glyphicon glyphicon glyphicon-remove"></span> Delete</a></th></tr>
+    </thead>
+    <tbody>
+
+		{% for name, value in object.get_fields %}
+		  {% if value %}
+		  <tr><td style="width: 110px"><label>{{ name|capfirst }} :</label><span class="pull-right"> {{value}} </span></td></tr>
+		  {% endif %}
+		{% endfor %}
+    </tbody>
+</table>
+
+{% if form_file %}
+Attachments :
+	<script src="{% static 'main/js/dropzone.js' %}"></script>
+
+
+		<script type="text/javascript">
+			Dropzone.options.myDropzone = {
+
+				// Prevents Dropzone from uploading dropped files immediately
+				autoProcessQueue : false,
+
+				init : function() {
+					var submitButton = document.querySelector("#submit-all")
+					myDropzone = this;
+
+					submitButton.addEventListener("click", function() {
+						myDropzone.processQueue();
+						// Tell Dropzone to process all queued files.
+					});
+
+					// You might want to show the submit button only when
+					// files are dropped here:
+					this.on("addedfile", function() {
+						// Show submit button here and/or inform user to click it.
+					});
+
+				}
+			};
+		</script>
+		<link href="{% static 'main/css/dropzone.css' %}" type="text/css" rel="stylesheet"/>
+		<!-- IMPORTANT enctype attribute! -->
+		<form class="dropzone" action="{% url "drop_to_library" pk=object.id %}" method="post" enctype="multipart/form-data">
+			{% csrf_token %}
+		</form>
+		<button id="submit-all">
+			Submit all files
+		</button>
+
+{%endif%}
+
+
+
+{% endblock %}
