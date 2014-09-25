@@ -79,7 +79,7 @@ class Library(auto_model):
 	ercc_r2	= models.FloatField(null=True,blank=True)
 	ercc_mix = models.CharField(max_length=10,null=True,blank=True)
 	ercc_dilution = models.FloatField(null=True,blank=True)
-	reads_mapped_refseq = models.IntegerField(null=True,blank=True)
+	reads_mapped_refseq_portion = models.FloatField(null=True,blank=True)
 	reads_mapped_ercc = models.IntegerField(null=True,blank=True)
 	reads_mapped_ercc_portion = models.FloatField(verbose_name="Reads Mapped ERCC (%)",null=True,blank=True)
 	n = models.IntegerField(null=True,blank=True)
