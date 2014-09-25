@@ -70,43 +70,6 @@
 		$('#myModal').modal();
 	});
 
-	{% if user_list %}
-	$("#multiple_assign").click(function(){
-		del_list_id=[];
-		del_list_name=""
-		$('table').find('input[type="checkbox"]:checked').each(function(){
-			del_list_id.push($(this).attr("value"));
-			del_list_name+="<p>"+$(this).attr("name")+"</p>"
-		});
-		$('#myModal h4.modal-title').text("Confirm {{model}} User Assign to ");
-			var ulist="<select id='uid'>{% for user in user_list.queryset %}<option value='{{user.username}}'>{{user.username}}</option>{% endfor %}</select>"
-		$('#myModal div.modal-body').html(ulist+del_list_name);
-		$('#myModal #valid').click(function (){
-			$.post("/library/multiuserassign",{'uid':$("#uid").val(),'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
-				$('#myModal div.modal-body').html(data)
-				});
-		});
-		$('#myModal').modal();
-	});
-
-	$("#multiple_unlock").click(function(){
-		del_list_id=[];
-		del_list_name=""
-		$('table').find('input[type="checkbox"]:checked').each(function(){
-			del_list_id.push($(this).attr("value"));
-			del_list_name+="<p>"+$(this).attr("name")+"</p>"
-		});
-		$('#myModal h4.modal-title').text("Confirm {{model}} unlock of  ");
-		$('#myModal div.modal-body').html(del_list_name);
-		$('#myModal #valid').click(function (){
-			$.post("/library/multiuunlock",{'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
-
-			$('#myModal div.modal-body').html(data)
-			});
-		});
-		$('#myModal').modal();
-	});
-	{% endif %}
 	$("#select_all").click(function(event){
 		ck=true
 		if($("#select_all").hasClass("checked"))ck=false
@@ -147,8 +110,7 @@
     		</th>
       		<th>Name</th>
       		{% if object_list.0.has_etxra_list_fields %} {{ object_list.0.get_extra_list_fields_headers }} {% endif %}
-      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Edit</th>{% endif %}
-      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Delete</th>{% endif %}
+      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Operations</th>{% endif %}
 
       		{% if object_list.0.has_status %}<th>Status</th>{% endif %}
       </tr>
@@ -159,9 +121,7 @@
       	<td><input type="checkbox" value="{{object.id }}" name="{% if object.name %}{{ object.name }}{% else %}{{object.get_name}}{% endif %}"></td>
       	<td><a href="{{object.get_absolute_details_url}}">{% if object.name %}{{ object.name }}{% else %}{{object.get_name}}{% endif %}</a></td>
       	{% if object.has_etxra_list_fields %}{{ object.get_extra_list_fields }}{% endif %}
-      	{% if object_list.0.is_user_editable or user.is_superuser%}<td><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit"></i></a></td>{% endif %}
-      	{% if object_list.0.is_user_editable or user.is_superuser%}<td><a href="{{object.get_absolute_delete_url}}"><i class="glyphicon glyphicon glyphicon-remove"></i></a></td>{% endif %}
-
+      	{% if object_list.0.is_user_editable or user.is_superuser%}<td><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit">   </i>   </a><a href="{{object.get_absolute_delete_url}}"><i class="glyphicon glyphicon glyphicon-remove"></i></a></td>{% endif %}
       	{% if object.has_status %}<td class="{{object.get_class_status}}"><i {% if object.get_status %} class="glyphicon glyphicon-ok " {% else %} class="glyphicon glyphicon-warning-sign " {% endif %} ></i></td>{% endif %}
       </tr>
     {% endfor %}
