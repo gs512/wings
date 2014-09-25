@@ -119,12 +119,15 @@ class Library(auto_model):
 	def get_name(self):return self.library_id
 
 	def get_list_view_fields(self,name=False):
-		field_list=["library_id","reads_type","flowcell_id","determined_reads","average_phred","qc_report_url","ercc_r2","ercc_url"]
+		field_list=["reads_type","flowcell_id","determined_reads","average_phred","qc_report_url","ercc_r2","ercc_url"]
 		f=[]
 		for field in self._meta.fields:
 			if field.name in field_list:
 				if name:f.append(field.verbose_name)
-				else : f.append(getattr(self,field.name))
+				else :
+					if "url" in field.name:
+						f.append(("<a href='{}'>link</a>").format(getattr(self,field.name)))
+					else :f.append(getattr(self,field.name))
 		return f
 
 
