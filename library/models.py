@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django_extensions.db.fields import UUIDField
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User,Group
+from django_extensions.db.fields import UUIDField
 from datetime import datetime
 from library.current_user import get_current_user,get_current_user_groups,get_current_user_is_super
 
@@ -14,6 +14,12 @@ class auto_model(models.Model):
 	created_by = models.ForeignKey(User,default=get_current_user,editable=False)
 	uuid = UUIDField(auto=True,editable=False)
 	is_locked = models.BooleanField(editable=False,default=False)
+	name = models.CharField(max_length=255,null=True,blank=True,editable=False)
+
+# 	def __init__(self, *args, **kwargs):
+# 		models.Model.__init__(self, *args, **kwargs)
+# 		if "name" not in kwargs:
+# 			self.name=self.object.__class__.__name__+"_"+self.object.id
 
 	def get_fields(self):
 		for field in self._meta.fields:
@@ -64,3 +70,38 @@ class auto_model(models.Model):
 
 class Library(auto_model):
 	library_id = models.CharField(max_length=255,verbose_name="Library ID")
+	reads_type	= models.CharField(max_length=255,verbose_name="Reads Type",null=True)
+	flowcell_id	= models.CharField(max_length=255,verbose_name="Flowcell Id",null=True,blank=True)
+	determined_reads = models.IntegerField(verbose_name="Determined Reads #",null=True,blank=True)
+	average_phred	 = models.CharField(max_length=255,verbose_name="Average Phred",null=True,blank=True)
+	qc_report_url	= models.URLField(verbose_name="QC URL",null=True,blank=True)
+	ercc_r2	= models.FloatField(null=True,blank=True)
+	ercc_mix = models.CharField(max_length=10,null=True,blank=True)
+	ercc_dilution = models.FloatField(null=True,blank=True)
+	reads_mapped_refseq = models.IntegerField(null=True,blank=True)
+	reads_mapped_ercc = models.IntegerField(null=True,blank=True)
+	reads_mapped_ercc_portion = models.FloatField(verbose_name="Reads Mapped ERCC (%)",null=True,blank=True)
+	n = models.IntegerField(null=True,blank=True)
+	ercc_url = models.URLField(verbose_name="ERCC URL",null=True,blank=True)
+	library_alias = models.TextField(null=True,blank=True)
+	reads_mapped_refseq = models.IntegerField(null=True,blank=True)
+# 	pool_id
+# 	lane_id
+# 	tube_id
+# 	ordered
+# 	barcode_id
+# 	portion_pool_(%)
+	lld = models.IntegerField(null=True,blank=True)
+	replicate = models.IntegerField(default=1)
+
+class Tag(auto_model):
+	libraries_group = models.ManyToManyField(Library, through='TagValues',through_fields=('tag','library'))
+
+class TagValues(auto_model):
+	tag = models.ForeignKey(Tag)
+	library = models.ForeignKey(Library)
+	tag_value = models.CharField(max_length=255)
+	tag_number = models.IntegerField()
+
+class Project(auto_model):
+	libraries = models.ManyToManyField(Library)
