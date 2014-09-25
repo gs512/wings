@@ -1,0 +1,48 @@
+
+{% extends "base.html" %}
+{% block title %}
+<ul class="nav nav-pills nav-left">
+<li><a href="#" class="no_link"><strong><i class="glyphicon glyphicon-dashboard"></i>{{object_name }} in {{ pool_name }}</strong></a></li>
+</ul>
+{% endblock %}
+{% block content %}
+
+<div class=" has-error"><label class="control-label">{{error}}</label></div>
+
+<form method="post" action="">
+	{% csrf_token %}
+
+{{ formset.management_form }}
+{% for form in formset %}
+ {% if form.errors %} <div class="form-group has-error">{% else %}<div class="form-group">{% endif %}
+	{% for hidden in form.hidden_fields %}
+		{{ hidden }}
+	{% endfor %}
+	{% for field in form.visible_fields %}
+          <label class="control-label" for="{{ field.auto_id }}">{{ field.label }} : {{field.errors|striptags}} </label>
+            {{ field }}
+	{% endfor %}
+	</div>
+{% endfor %}
+
+
+
+
+
+
+
+<input type="submit" value="Submit" class="btn btn-default"/>
+
+
+{% endblock %}
+
+{% block js %}
+
+//	$("form div label").addClass("control-label ");
+//	$("form div input").addClass("form-control");
+//	$("form div textarea").addClass("form-control");
+//	$("form div select").addClass("form-control");
+
+
+//$(".form-group").formset();
+{% endblock %}
