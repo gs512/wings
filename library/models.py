@@ -8,13 +8,22 @@ from datetime import datetime
 from library.current_user import get_current_user,get_current_user_groups,get_current_user_is_super
 
 # Create your models here.
+
+def modify_fields(**kwargs):
+	def wrap(cls):
+			for field, prop_dict in kwargs.items():
+					for prop, val in prop_dict.items():
+							setattr(cls._meta.get_field(field), prop, val)
+			return cls
+	return wrap
+
 class auto_model(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	last_modified = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User,default=get_current_user,editable=False)
 	uuid = UUIDField(auto=True,editable=False)
 	is_locked = models.BooleanField(editable=False,default=False)
-	name = models.CharField(max_length=255,null=True,blank=True,editable=False)
+	name = models.CharField(max_length=255,null=True,blank=True,editable=True)
 
 # 	def __init__(self, *args, **kwargs):
 # 		models.Model.__init__(self, *args, **kwargs)
@@ -69,8 +78,10 @@ class auto_model(models.Model):
 	class Meta:
 		abstract = True
 
+@modify_fields(name={'verbose_name': 'Library ID'})
 class Library(auto_model):
-	library_id = models.CharField(max_length=255,verbose_name="Library ID")
+# 	library_id = models.CharField(max_length=255,verbose_name="Library ID")
+
 	reads_type	= models.CharField(max_length=255,verbose_name="Reads Type",null=True)
 	flowcell_id	= models.CharField(max_length=255,verbose_name="Flowcell Id",null=True,blank=True)
 	determined_reads = models.IntegerField(verbose_name="Determined Reads #",null=True,blank=True)

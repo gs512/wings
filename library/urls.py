@@ -34,4 +34,10 @@ urlpatterns = patterns('',
 	url(r'^project/new$', SecretCreateView.as_view(model = Project , success_url= reverse_lazy('project_list')), name='project_new'),
 	url(r'^project/delete/(?P<pk>\d+)$', SecretDeleteView.as_view(model = Project  , success_url= reverse_lazy('project_list')), name='project_delete'),
 	url(r'^project/edit/(?P<pk>\d+)$', SecretUpdateView.as_view(model = Project ,success_url= reverse_lazy('project_list')), name='project_edit'),#   my_aut_urls[10],
+	url(r'^tagvalues/(?P<pk>\d+)$', SecretDetailView.as_view(model = TagValues), name='tagvalues_details'),
+	url(r'^tagvalues/$', SecretListView.as_view(model = TagValues,paginate_by = '20'), name='tagvalues_list'),
+	url(r'^tagvalues/new$', SecretCreateView.as_view(model = TagValues , success_url= reverse_lazy('tagvalues_list')), name='tagvalues_new'),
+	url(r'^tagvalues/delete/(?P<pk>\d+)$', SecretDeleteView.as_view(model = TagValues  , success_url= reverse_lazy('tagvalues_list')), name='tagvalues_delete'),
+	url(r'^tagvalues/edit/(?P<pk>\d+)$', SecretUpdateView.as_view(model = TagValues ,success_url= reverse_lazy('tagvalues_list')), name='tagvalues_edit'),
+
 )
