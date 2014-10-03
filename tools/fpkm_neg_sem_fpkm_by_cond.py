@@ -17,6 +17,7 @@ p_value=0.001
 if len(sys.argv)>1:p_value=float(sys.argv[2])
 wd=os.getcwd()
 myDir=wd
+wd="/Users/gs/Desktop/CL"
 gene_ind={}
 grp=OrderedDict()
 glist={}
