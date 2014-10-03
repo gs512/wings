@@ -26,8 +26,8 @@ glist["S"]=open(wd+"/S.csv","r").read().splitlines()
 s=open(wd+"/sem.txt","r").read().splitlines()
 sem={}
 replicates=3
-pp = pprint.PrettyPrinter(indent=1)		
-for line in s[1:]: 
+pp = pprint.PrettyPrinter(indent=1)
+for line in s[1:]:
 	line=line.split('\t')
 	gene=line[0]
 	cond=line[1]
@@ -76,7 +76,7 @@ for my_cmp in ord_cmp:
 # 		print(my_cmp,"is_present",grp[my_tmp_cmp])
 		ord_cmp[my_cmp]=grp[my_tmp_cmp]
 # 		ord_cmp[(my_cmp.split(','))[2]]=grp[my_tmp_cmp]
-	else : 
+	else :
 		tmp=my_tmp_cmp.split(',')
 		cond_1=tmp[1]
 		cond_2=tmp[0]
@@ -100,72 +100,49 @@ for gene in sem:
 	my_flags[gene]={}
 	for my_cmp in ord_cmp:
 		my_flags[gene][my_cmp]=[ord_cmp[my_cmp][gene]["FC"],ord_cmp[my_cmp][gene]["PV"],ord_cmp[my_cmp][gene]]
-	
-tmp_FC=dict([(k,any([abs(l[0])>=1.0 for (j,l) in i.items() ])) for (k,i) in my_flags.items()])
-tmp_PV=dict([(k,any([abs(l[1])<=p_value for (j,l) in i.items() ])) for (k,i) in my_flags.items()])
-atl_1_res=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# tmp_FC=dict([(k,all([l[0]>=1.0 for (j,l) in i.items() if "H" in j])) for (k,i) in my_flags.items()])
+
+tmp_FC=dict([(k,any([(abs(l[0])>=1.0 and l[1]<=p_value) for (j,l) in i.items() ])) for (k,i) in my_flags.items()])
+atl_1_res=tmp_FC
+
 
 for k in atl_1_res:
 	if not atl_1_res[k]:del my_flags[k]
-# print("ATL",atl_1_res)	
-	
-# tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
-# atl_1_res=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("ATL Pos_NEG",atl_1_res)
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
+atl_1_res=tmp_FC
+# pp.pprint(atl_1_res)
 
-# tmp_FC=dict([(k,all([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,all([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
-# all_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("ALL",all_up)
+tmp_FC=dict([(k,all([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2])) for (k,i) in my_flags.items()])
+all_up=tmp_FC
 
-# tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# H_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("H",H_up)
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+H_up=tmp_FC
 
-# tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# C_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("C",C_up)
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+C_up=tmp_FC
 
-# tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# S_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("S",S_up)
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+S_up=tmp_FC
 
-# tmp_FC=dict([(k,all([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,all([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "S" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# S_pos_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("S POS",S_pos_up)
+tmp_FC=dict([(k,all([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+S_pos_up=tmp_FC
 
-# tmp_FC=dict([(k,all([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,all([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "C" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# C_pos_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("C POS",C_pos_up)
+tmp_FC=dict([(k,all([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+C_pos_up=tmp_FC
 
-# tmp_FC=dict([(k,all([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,all([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "H" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-# H_pos_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("H POS",H_pos_up)
+tmp_FC=dict([(k,all([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+H_pos_up=tmp_FC
 
-# tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2  ])) for (k,i) in my_flags.items()])
-# tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2 ])) for (k,i) in my_flags.items()])
-# atl_1_pos_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
-# print("atl_1_pos_up",atl_1_pos_up)
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))>2  ])) for (k,i) in my_flags.items()])
+atl_1_pos_up=tmp_FC
 
-tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-atl_1_TPH_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "H" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+atl_1_TPH_up=tmp_FC
 
-tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-atl_1_TPC_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "C" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+atl_1_TPC_up=tmp_FC
 
-tmp_FC=dict([(k,any([l[0]>=1.0 for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
-tmp_PV=dict([(k,any([l[1]<=p_value for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2])])) for (k,i) in my_flags.items()])
-atl_1_TPS_up=dict([ (k,tmp_FC[k] and tmp_PV[k]) for k in tmp_FC.keys()])
+tmp_FC=dict([(k,any([(l[0]>=1.0 and l[1]<=p_value) for (j,l) in i.items() if len(((j.split(','))[2]).split('_'))<=2 and "S" in ((j.split(','))[2]) ])) for (k,i) in my_flags.items()])
+atl_1_TPS_up=tmp_FC
 # for i in my_flags['Sst']:
 # 	if "S" in i:
 # 		print(i,my_flags['Sst'][i][0])
@@ -191,7 +168,7 @@ for (k,v) in my_flags.items():
 	all_H_neg_fpkm_lower_10[k]=all(float(o)<10 for o in tmp_v_H)
 	all_C_neg_fpkm_lower_10[k]=all(float(o)<10 for o in tmp_v_C)
 	all_S_neg_fpkm_lower_10[k]=all(float(o)<10 for o in tmp_v_S)
-	
+
 
 
 first=True
@@ -211,53 +188,53 @@ for gene in my_flags:
 	if all_H_neg_fpkm_lower_10[gene]:Hn=1
 	if all_C_neg_fpkm_lower_10[gene]:Cn=1
 	if all_S_neg_fpkm_lower_10[gene]:Sn=1
-	
-	# inf=False
-	# T1=0
-	# up_in_one=0
-	# if atl_1_res[gene]:up_in_one=1
-	# up_in_all=0
-	# if all_up[gene]:up_in_all=1
-	# up_h_only=0
-	# if H_up[gene] and not C_up[gene] and not S_up[gene]:up_h_only=1
-	# up_c_only=0
-	# if C_up[gene] and not H_up[gene] and not S_up[gene]:up_c_only=1
-	# up_s_only=0
-	# if S_up[gene] and not H_up[gene] and not C_up[gene]:up_s_only=1
-	# up_atl1_hc=0
-	# if H_up[gene] and C_up[gene] and not S_up[gene]:up_atl1_hc=1
-	# if atl_1_pos_up[gene]:T1=1
-	# E=0
-	# S=0
-	# A=0
-	# F=0
-	# ht=0
-	# if H_pos_up[gene]:ht=1
-	# ct=0
-	# if C_pos_up[gene]:ct=1
-	# st=0
-	# if S_pos_up[gene]:st=1
-	# for my_cmp in ord_cmp:
-	# 	v=[str(i) for(k,i) in ord_cmp[my_cmp][gene].items()]
-	# 	if not (abs(float(v[0]))>=1 and float(v[1])<=p_value):
-	# 		v[0]=""
-	# 		v[1]=""
-	# 	k=[k for(k,i) in ord_cmp[my_cmp][gene].items()][:-1]
-	# 	cond_prefix=(my_cmp.split(","))[2]
-	# 	k[0]=cond_prefix+"_"+k[0]
-	# 	k[1]=cond_prefix+"_"+k[1]
-	# 	if first:head=head+","+(',').join(k)
-	# 	line=line+","+(',').join(v[:-1])
+
+	inf=False
+	T1=0
+	up_in_one=0
+	if atl_1_res[gene]:up_in_one=1
+	up_in_all=0
+	if all_up[gene]:up_in_all=1
+	up_h_only=0
+	if H_up[gene] and not C_up[gene] and not S_up[gene]:up_h_only=1
+	up_c_only=0
+	if C_up[gene] and not H_up[gene] and not S_up[gene]:up_c_only=1
+	up_s_only=0
+	if S_up[gene] and not H_up[gene] and not C_up[gene]:up_s_only=1
+	up_atl1_hc=0
+	if H_up[gene] and C_up[gene] and not S_up[gene]:up_atl1_hc=1
+	if atl_1_pos_up[gene]:T1=1
+	E=0
+	S=0
+	A=0
+	F=0
+	ht=0
+	if H_pos_up[gene]:ht=1
+	ct=0
+	if C_pos_up[gene]:ct=1
+	st=0
+	if S_pos_up[gene]:st=1
+	for my_cmp in ord_cmp:
+		v=[str(i) for(k,i) in ord_cmp[my_cmp][gene].items()]
+		if not (abs(float(v[0]))>=1 and float(v[1])<=p_value):
+			v[0]=""
+			v[1]=""
+		k=[k for(k,i) in ord_cmp[my_cmp][gene].items()][:-1]
+		cond_prefix=(my_cmp.split(","))[2]
+		k[0]=cond_prefix+"_"+k[0]
+		k[1]=cond_prefix+"_"+k[1]
+		if first:head=head+","+(',').join(k)
+		line=line+","+(',').join(v[:-1])
 # 		print(v)
-		# if v[-1]=="True":inf=True
-	# if first:print("gene_id"+",inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A"+head);first=False
-	if first:print("gene_id"+",H1,C1,S1,Hn,Cn,Sn");first=False
-	# if gene in glist["A"]:A="1"	
-	# if gene in glist["S"]:S="1"
-	# if gene in glist["E"]:E="1"
-	# if inf:inf=1
-	# else: inf=0
-	# line=(gene+",{},{},{},{},{},{},{},{},{},{},{},{},{},{}"+line).format(inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A)
-	line=(gene+",{},{},{},{},{},{}").format(H1,C1,S1,Hn,Cn,Sn)
+		if v[-1]=="True":inf=True
+	if first:print("gene_id"+",inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A,H1,C1,S1,Hn,Cn,Sn"+head);first=False
+# 	if first:print("gene_id"+",H1,C1,S1,Hn,Cn,Sn");first=False
+	if gene in glist["A"]:A="1"
+	if gene in glist["S"]:S="1"
+	if gene in glist["E"]:E="1"
+	if inf:inf=1
+	else: inf=0
+	line=(gene+",{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}"+line).format(inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A,H1,C1,S1,Hn,Cn,Sn)
+# 	line=(gene+",{},{},{},{},{},{}").format(H1,C1,S1,Hn,Cn,Sn)
 
 	print(line)
