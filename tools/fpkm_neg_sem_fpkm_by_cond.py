@@ -24,7 +24,7 @@ glist={}
 glist["A"]=open(wd+"/A.csv","r").read().splitlines()
 glist["E"]=open(wd+"/E.csv","r").read().splitlines()
 glist["S"]=open(wd+"/S.csv","r").read().splitlines()
-s=open(wd+"/sem.txt","r").read().splitlines()
+s=open(wd+"/my_filter_test_sem.txt","r").read().splitlines()
 sem={}
 replicates=3
 pp = pprint.PrettyPrinter(indent=1)
@@ -44,7 +44,7 @@ if os.path.exists(wd+"/ord_cmp.txt"):
 		ord_cmp[l]={}
 
 
-val=open(wd+"/gene_exp.diff","r").read().splitlines()
+val=open(wd+"/my_filter_test.txt","r").read().splitlines()
 for v in val[1:]:
 	line=v.replace(',',"_").split('\t')
 	cond=str(line[4]+","+line[5])
@@ -101,10 +101,12 @@ for gene in sem:
 	my_flags[gene]={}
 	for my_cmp in ord_cmp:
 		my_flags[gene][my_cmp]=[ord_cmp[my_cmp][gene]["FC"],ord_cmp[my_cmp][gene]["PV"],ord_cmp[my_cmp][gene]]
+		print(gene,my_cmp,abs(ord_cmp[my_cmp][gene]["FC"])>=1.0 and ord_cmp[my_cmp][gene]["PV"]<=p_value)
+
 
 tmp_FC=dict([(k,any([(abs(l[0])>=1.0 and l[1]<=p_value) for (j,l) in i.items() ])) for (k,i) in my_flags.items()])
 atl_1_res=tmp_FC
-
+# pp.pprint(atl_1_res)
 
 for k in atl_1_res:
 	if not atl_1_res[k]:del my_flags[k]
