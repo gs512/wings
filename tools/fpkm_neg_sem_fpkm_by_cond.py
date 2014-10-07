@@ -230,7 +230,7 @@ for gene in my_flags:
 		line=line+","+(',').join(v[:-1])
 # 		print(v)
 		if v[-1]=="True":inf=True
-	if first:print("gene_id"+head+",F0,1,All,H,C,S,HC,T1,Ht,Ct,St,H1,C1,S1,Hn,Cn,Sn,E,S,A");first=False
+	if first:print("gene_id"+head+",F0,1,All,Hu,Cu,Su,HC,T1,Ht,Ct,St,H1,C1,S1,Hn,Cn,Sn,E,S,A");first=False
 # 	if first:print("gene_id"+",H1,C1,S1,Hn,Cn,Sn");first=False
 	if gene in glist["A"]:A="1"
 	if gene in glist["S"]:S="1"
