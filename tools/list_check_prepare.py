@@ -5,6 +5,9 @@ import sys
 import string
 import re
 
+
+# Note that for the comparison to work, you have to get all in decimal auto in numbers, get rid of the thousands separator
+
 origin_head=['gene_id','LP2_H_FC','LP2_H_PV','LP2_H_Neg_fpkm','LP2_H_Pos_fpkm','LP2_H_Neg_SEM','LP2_H_Pos_SEM','LP2_C_FC','LP2_C_PV','LP2_C_Neg_fpkm','LP2_C_Pos_fpkm','LP2_C_Neg_SEM','LP2_C_Pos_SEM','LP2_S_FC','LP2_S_PV','LP2_S_Neg_fpkm','LP2_S_Pos_fpkm','LP2_S_Neg_SEM','LP2_S_Pos_SEM','LP7_H_FC','LP7_H_PV','LP7_H_Neg_fpkm','LP7_H_Pos_fpkm','LP7_H_Neg_SEM','LP7_H_Pos_SEM','LP7_C_FC','LP7_C_PV','LP7_C_Neg_fpkm','LP7_C_Pos_fpkm','LP7_C_Neg_SEM','LP7_C_Pos_SEM','LP7_S_FC','LP7_S_PV','LP7_S_Neg_fpkm','LP7_S_Pos_fpkm','LP7_S_Neg_SEM','LP7_S_Pos_SEM','LP15_H_FC','LP15_H_PV','LP15_H_Neg_fpkm','LP15_H_Pos_fpkm','LP15_H_Neg_SEM','LP15_H_Pos_SEM','LP15_C_FC','LP15_C_PV','LP15_C_Neg_fpkm','LP15_C_Pos_fpkm','LP15_C_Neg_SEM','LP15_C_Pos_SEM','LP15_S_FC','LP15_S_PV','LP15_S_Neg_fpkm','LP15_S_Pos_fpkm','LP15_S_Neg_SEM','LP15_S_Pos_SEM','LP2_LP7_H_FC','LP2_LP7_H_PV','LP2_H_Pos_fpkm','LP7_H_Pos_fpkm','LP2_H_Pos_SEM','LP7_H_Pos_SEM','LP2_LP7_C_FC','LP2_LP7_C_PV','LP2_C_Pos_fpkm','LP7_C_Pos_fpkm','LP2_C_Pos_SEM','LP7_C_Pos_SEM','LP2_LP7_S_FC','LP2_LP7_S_PV','LP2_S_Pos_fpkm','LP7_S_Pos_fpkm','LP2_S_Pos_SEM','LP7_S_Pos_SEM','LP7_LP15_H_FC','LP7_LP15_H_PV','LP15_H_Pos_fpkm','LP7_H_Pos_fpkm','LP15_H_Pos_SEM','LP7_H_Pos_SEM','LP7_LP15_C_FC','LP7_LP15_C_PV','LP15_C_Pos_fpkm','LP7_C_Pos_fpkm','LP15_C_Pos_SEM','LP7_C_Pos_SEM','LP7_LP15_S_FC','LP7_LP15_S_PV','LP15_S_Pos_fpkm','LP7_S_Pos_fpkm','LP15_S_Pos_SEM','LP7_S_Pos_SEM','F0','1','All','Hu','Cu','Su','HC','T1','Ht','Ct','St','H1','C1','S1','Hn','Cn','Sn','E','S','A']
 to_match_head=['gene_id','LP2_H_Pos_fpkm','LP2_H_Pos_SEM','LP2_H_Neg_fpkm','LP2_H_Neg_SEM','LP2_C_Pos_fpkm','LP2_C_Pos_SEM','LP2_C_Neg_fpkm','LP2_C_Neg_SEM','LP2_S_Pos_fpkm','LP2_S_Pos_SEM','LP2_S_Neg_fpkm','LP2_S_Neg_SEM','LP7_H_Pos_fpkm','LP7_H_Pos_SEM','LP7_H_Neg_fpkm','LP7_H_Neg_SEM','LP7_C_Pos_fpkm','LP7_C_Pos_SEM','LP7_C_Neg_fpkm','LP7_C_Neg_SEM','LP7_S_Pos_fpkm','LP7_S_Pos_SEM','LP7_S_Neg_fpkm','LP7_S_Neg_SEM','LP15_H_Pos_fpkm','LP15_H_Pos_SEM','LP15_H_Neg_fpkm','LP15_H_Neg_SEM','LP15_C_Pos_fpkm','LP15_C_Pos_SEM','LP15_C_Neg_fpkm','LP15_C_Neg_SEM','LP15_S_Pos_fpkm','LP15_S_Pos_SEM','LP15_S_Neg_fpkm','LP15_S_Neg_SEM','LP2_H_FC','LP2_H_PV','LP2_C_FC','LP2_C_PV','LP2_S_FC','LP2_S_PV','LP7_H_FC','LP7_H_PV','LP7_C_FC','LP7_C_PV','LP7_S_FC','LP7_S_PV','LP15_H_FC','LP15_H_PV','LP15_C_FC','LP15_C_PV','LP15_S_FC','LP15_S_PV','LP2_LP7_H_FC','LP2_LP7_H_PV','LP2_LP7_C_FC','LP2_LP7_C_PV','LP2_LP7_S_FC','LP2_LP7_S_PV','LP7_LP15_H_FC','LP7_LP15_H_PV','LP7_LP15_C_FC','LP7_LP15_C_PV','LP7_LP15_S_FC','LP7_LP15_S_PV','F0','1','All','Hu','Cu','Su','HC','T1','Ht','Ct','St','H1','C1','S1','Hn','Cn','Sn','E','S','A']
 ordered_header=[]
@@ -23,7 +26,7 @@ res={}
 for line in tmp:
 	line=line.split(',')
 	res[line[0]]=line
-tmp=open(wd+"jordane.csv","r").read().splitlines()
+tmp=open(wd+"jo.tsv","r").read().splitlines()
 for line in tmp:
 	line=line.split(',')
 	x=res[line[0]]
