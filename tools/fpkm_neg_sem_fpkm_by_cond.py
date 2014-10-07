@@ -24,7 +24,7 @@ glist={}
 glist["A"]=open(wd+"/A.csv","r").read().splitlines()
 glist["E"]=open(wd+"/E.csv","r").read().splitlines()
 glist["S"]=open(wd+"/S.csv","r").read().splitlines()
-s=open(wd+"/my_filter_test_sem.txt","r").read().splitlines()
+s=open(wd+"/sem.txt","r").read().splitlines()
 sem={}
 replicates=3
 pp = pprint.PrettyPrinter(indent=1)
@@ -44,7 +44,7 @@ if os.path.exists(wd+"/ord_cmp.txt"):
 		ord_cmp[l]={}
 
 
-val=open(wd+"/my_filter_test.txt","r").read().splitlines()
+val=open(wd+"/gene_exp.diff","r").read().splitlines()
 for v in val[1:]:
 	line=v.replace(',',"_").split('\t')
 	cond=str(line[4]+","+line[5])
@@ -101,7 +101,7 @@ for gene in sem:
 	my_flags[gene]={}
 	for my_cmp in ord_cmp:
 		my_flags[gene][my_cmp]=[ord_cmp[my_cmp][gene]["FC"],ord_cmp[my_cmp][gene]["PV"],ord_cmp[my_cmp][gene]]
-		print(gene,my_cmp,abs(ord_cmp[my_cmp][gene]["FC"])>=1.0 and ord_cmp[my_cmp][gene]["PV"]<=p_value)
+# 		print(gene,my_cmp,abs(ord_cmp[my_cmp][gene]["FC"])>=1.0 and ord_cmp[my_cmp][gene]["PV"]<=p_value)
 
 
 tmp_FC=dict([(k,any([(abs(l[0])>=1.0 and l[1]<=p_value) for (j,l) in i.items() ])) for (k,i) in my_flags.items()])
@@ -230,14 +230,13 @@ for gene in my_flags:
 		line=line+","+(',').join(v[:-1])
 # 		print(v)
 		if v[-1]=="True":inf=True
-	if first:print("gene_id"+",inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A,H1,C1,S1,Hn,Cn,Sn"+head);first=False
+	if first:print("gene_id"+head+",F0,1,All,H,C,S,HC,T1,Ht,Ct,St,H1,C1,S1,Hn,Cn,Sn,E,S,A");first=False
 # 	if first:print("gene_id"+",H1,C1,S1,Hn,Cn,Sn");first=False
 	if gene in glist["A"]:A="1"
 	if gene in glist["S"]:S="1"
 	if gene in glist["E"]:E="1"
 	if inf:inf=1
 	else: inf=0
-	line=(gene+",{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}"+line).format(inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,E,S,A,H1,C1,S1,Hn,Cn,Sn)
-# 	line=(gene+",{},{},{},{},{},{}").format(H1,C1,S1,Hn,Cn,Sn)
+	line=(gene+line+",{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}").format(inf,up_in_one,up_in_all,up_h_only,up_c_only,up_s_only,up_atl1_hc,T1,ht,ct,st,H1,C1,S1,Hn,Cn,Sn,E,S,A)
 
 	print(line)
