@@ -232,7 +232,7 @@ jQuery.fn.serializeJSON=function() {
         }
         json[n.name].push(n.value || '');
       }
-      else json[n.name] = n.value || '';      
+      else json[n.name] = n.value || '';
     }
   });
   return json;

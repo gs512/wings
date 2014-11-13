@@ -17,31 +17,36 @@ def modify_fields(**kwargs):
 			return cls
 	return wrap
 
+
+
 class auto_model(models.Model):
+
 	created_at = models.DateTimeField(auto_now_add=True)
-	last_modified = models.DateTimeField(auto_now_add=True)
 	created_by = models.ForeignKey(User,default=get_current_user,editable=False)
 	uuid = UUIDField(auto=True,editable=False)
 	is_locked = models.BooleanField(editable=False,default=False)
+	last_modified = models.DateTimeField(auto_now_add=True)
 	name = models.CharField(max_length=255,null=True,blank=True,editable=True)
 
-# 	def __init__(self, *args, **kwargs):
-# 		models.Model.__init__(self, *args, **kwargs)
-# 		if "name" not in kwargs:
-# 			self.name=self.object.__class__.__name__+"_"+self.object.id
 
 	def get_fields(self):
 		f=[]
-		for field in self._meta.fields:
-			if field.get_internal_type() == "ForeignKey" and getattr(self,field.name)!=None :
-				tmp=field.related.parent_model.objects.get(pk=field.value_to_string(self))
-				if hasattr(tmp,'get_absolute_details_url'):
-					tmp=("<a href='{}'>{}</a>").format(tmp.get_absolute_details_url(),(getattr(self,field.name)).get_name())
-				else :tmp=getattr(self,field.name)
-				f.append([field.verbose_name,mark_safe(tmp)])
-			else :
-				f.append([field.verbose_name,getattr(self,field.name)])
-		f.append(["URI",mark_safe(("<a href='{}'>{}</a>").format(self.get_uuid_url(),"Direct Link"))])
+		if not get_current_user_is_super():
+			for field in self._meta.fields:
+				if field.verbose_name not in ['created at','is locked','Sequencer','lane','Libraries Pooled','uuid']:
+					f.append([field.verbose_name,getattr(self,field.name)])
+			f.append(["URI",mark_safe(("<a href='{}'>{}</a>").format(self.get_uuid_url(),"Direct Link"))])
+		else:
+			for field in self._meta.fields:
+				if field.get_internal_type() == "ForeignKey" and getattr(self,field.name)!=None :
+					tmp=field.related.parent_model.objects.get(pk=field.value_to_string(self))
+					if hasattr(tmp,'get_absolute_details_url'):
+						tmp=("<a href='{}'>{}</a>").format(tmp.get_absolute_details_url(),(getattr(self,field.name)).get_name())
+					else :tmp=getattr(self,field.name)
+					f.append([field.verbose_name,mark_safe(tmp)])
+				else :
+					f.append([field.verbose_name,getattr(self,field.name)])
+			f.append(["URI",mark_safe(("<a href='{}'>{}</a>").format(self.get_uuid_url(),"Direct Link"))])
 		f[0]=''
 		return f
 
@@ -55,11 +60,14 @@ class auto_model(models.Model):
 		if hasattr(self, 'name'):return self.name
 		else: return self.get_name()
 
+
 	def get_id(self):
 		return self.id
 	def get_absolute_edit_url(self):
+		if not get_current_user_is_super() and self.is_locked:return "#"
 		return reverse((self.__class__.__name__+'_edit').lower(), kwargs={'pk': self.pk})
 	def get_absolute_delete_url(self):
+		if not get_current_user_is_super() and self.is_locked:return "#"
 		return reverse((self.__class__.__name__+'_delete').lower(), kwargs={'pk': self.pk})
 	def get_absolute_details_url(self):
 		return reverse((self.__class__.__name__+'_details').lower(), kwargs={'pk': self.pk})
@@ -69,7 +77,17 @@ class auto_model(models.Model):
 		return reverse((self.__class__.__name__+'_list').lower())
 	def get_uuid_url(self):
 		return reverse('uuid_details', kwargs={'uuid':self.uuid})
-	def is_user_editable(self):return False
+	@classmethod
+	def is_user_editable(cls):return False
+
+	@classmethod
+	def get_add_link(cls):
+		return reverse((str(cls._meta).split('.')[1]+'_new').lower())
+
+	def is_user_owned(self):
+		if self.created_by == get_current_user() : return True
+		return False
+
 
 	def has_status(self): return False
 	def get_absolute_url(self):
@@ -127,7 +145,7 @@ class Library(auto_model):
 			header=header+("<th data-defaultsort='disabled'>{}</th>").format(fields)
 		return mark_safe(header)
 
-	def get_name(self):return self.library_id
+	def get_name(self):return self.name
 
 	def get_list_view_fields(self,name=False):
 		field_list=["reads_type","flowcell_id","determined_reads","average_phred","qc_report_url","ercc_r2","ercc_url"]
@@ -153,3 +171,10 @@ class TagValues(auto_model):
 
 class Project(auto_model):
 	libraries = models.ManyToManyField(Library)
+
+class Attachment(auto_model):
+	file = models.FileField(upload_to='files/%Y/%m/%d')
+	@classmethod
+	def is_user_editable(cls):return True
+
+

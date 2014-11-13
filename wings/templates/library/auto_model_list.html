@@ -7,15 +7,21 @@
 <div class="btn-group btn-sm">
 {% if user_list %}
 
-<!-- <button type="button" class="btn btn-sm" id="multiple_assign" href="#" title="Assign"><span class="glyphicon glyphicon glyphicon-user"></span> Assign items to user</button> -->
-<!-- <button type="button" class="btn btn-sm" id="multiple_unlock" href="#" title="unlock"><span class="glyphicon glyphicon glyphicon-share"></span> Unlock selected</button> -->
+<button type="button" class="btn btn-sm" id="multiple_assign" href="#" title="Assign"><span class="glyphicon glyphicon glyphicon-user"></span> Assign items to user</button>
+{% if user.is_superuser %}<button type="button" class="btn btn-sm" id="multiple_unlock" href="#" title="unlock"><span class="glyphicon glyphicon glyphicon-share"></span> Unlock selected</button>{% endif %}
 {% endif %}
-<button type="button" class="btn btn-sm"id="multiple_delete" href="#" title="Delete"><span class="glyphicon glyphicon glyphicon-remove"></span> Remove selected</button>
+{% if model == "LibraryPool"%}
+<button type="button" class="btn btn-sm" id="multiple_submit" href="#" title="submit"><span class="glyphicon glyphicon-share-alt"></span> Submit / Remove Pools</button>
+<button type="button" class="btn btn-sm" id="multiple_dup" href="#" title="submit"><span class="glyphicon glyphicon-plus"></span> Duplicate Pools</button>
+{% endif %}
+{% if model == "Library"%}
+<button type="button" class="btn btn-sm" id="multiplelibdup" href="#" title="submit"><span class="glyphicon glyphicon-plus"></span> Duplicate Libraries</button>
+{% endif %}
+<button type="button" class="btn btn-sm"id="multiple_delete" href="#" title="Delete"><span class="glyphicon glyphicon glyphicon-remove"></span> Delete Selected</button>
 <button type="button" class="btn btn-sm" id="select_all" class="" href="#" title="Select"><span class="glyphicon glyphicon glyphicon-check"></span> Select All</button>
 
 </div>
 <div class="nav navbar-nav navbar-right">
-<!--
 	<form class="navbar-form navbar-right" role="search" action="{% url "list_search" %}" method="get">
 		{% csrf_token %}
     <div class="form-group">
@@ -24,7 +30,6 @@
     </div>
     <button type="submit" class="btn btn-default">Go!</button>
   </form>
--->
 </div>
 
 </ul>
@@ -50,7 +55,12 @@
 
 {% endblock %}
 {% block js %}
+	$("#id_index").chosen({width:"95%",enable_split_word_search:true,search_contains:true})
+	$("#id_index").on('change',function(e,p){
+		val=$('#id_index option:selected').text()
+		$("#barcode_lnk").html("<a href='./"+$('#id_index').val()+"'> Direct Access to : "+val+" </a>");
 
+	});
 	$("#multiple_delete").click(function(){
 		del_list_id=[];
 		del_list_name=""
@@ -70,6 +80,43 @@
 		$('#myModal').modal();
 	});
 
+	{% if user_list %}
+	$("#multiple_assign").click(function(){
+		del_list_id=[];
+		del_list_name=""
+		$('table').find('input[type="checkbox"]:checked').each(function(){
+			del_list_id.push($(this).attr("value"));
+			del_list_name+="<p>"+$(this).attr("name")+"</p>"
+		});
+		$('#myModal h4.modal-title').text("Confirm {{model}} User Assign to ");
+			var ulist="<select id='uid'>{% for user in user_list.queryset %}<option value='{{user.username}}'>{{user.username}}</option>{% endfor %}</select>"
+		$('#myModal div.modal-body').html(ulist+del_list_name);
+		$('#myModal #valid').click(function (){
+			$.post("/library/multiuserassign",{'uid':$("#uid").val(),'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
+				$('#myModal div.modal-body').html(data)
+				});
+		});
+		$('#myModal').modal();
+	});
+
+	$("#multiple_unlock").click(function(){
+		del_list_id=[];
+		del_list_name=""
+		$('table').find('input[type="checkbox"]:checked').each(function(){
+			del_list_id.push($(this).attr("value"));
+			del_list_name+="<p>"+$(this).attr("name")+"</p>"
+		});
+		$('#myModal h4.modal-title').text("Confirm {{model}} unlock of  ");
+		$('#myModal div.modal-body').html(del_list_name);
+		$('#myModal #valid').click(function (){
+			$.post("/library/multiuunlock",{'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
+
+			$('#myModal div.modal-body').html(data)
+			});
+		});
+		$('#myModal').modal();
+	});
+	{% endif %}
 	$("#select_all").click(function(event){
 		ck=true
 		if($("#select_all").hasClass("checked"))ck=false
@@ -89,28 +136,94 @@
 		$('#myModal h4.modal-title').text("Confirm submission of {{model}} ");
 		$('#myModal div.modal-body').html(del_list_name);
 		$('#myModal #valid').click(function (){
+
 			$.post("/library/multisubmit",{'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
 				$('#myModal div.modal-body').html(data)
 			});
 		});
+
+
 		$('#myModal').modal();
+
 	});
+
+	$("#multiple_dup").click(function(){
+		del_list_id=[];
+		del_list_name=""
+		$('table').find('input[type="checkbox"]:checked').each(function(){
+			del_list_id.push($(this).attr("value"));
+			del_list_name+="<p>"+$(this).attr("name")+"</p>"
+		});
+		$('#myModal h4.modal-title').text("Confirm duplication of {{model}} ");
+		$('#myModal div.modal-body').html(del_list_name);
+		$('#myModal #valid').click(function (){
+
+			$.post("/library/multidup",{'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
+				$('#myModal div.modal-body').html(data)
+			});
+		});
+
+
+		$('#myModal').modal();
+
+	});
+
 	{% endif %}
+	{% if model == "Library"%}
+	$("#multiplelibdup").click(function(){
+		del_list_id=[];
+		del_list_name=""
+		$('table').find('input[type="checkbox"]:checked').each(function(){
+			del_list_id.push($(this).attr("value"));
+			del_list_name+="<p>"+$(this).attr("name")+"</p>"
+		});
+		$('#myModal h4.modal-title').text("Confirm duplication of {{model}} ");
+		$('#myModal div.modal-body').html(del_list_name);
+		$('#myModal #valid').click(function (){
+
+			$.post("/library/multiLibDup",{'delete_list':del_list_id,'csrfmiddlewaretoken': '{{ csrf_token }}',model:"{{model}}"},function(data){
+				$('#myModal div.modal-body').html(data)
+			});
+		});
+		$('#myModal').modal();
+
+	});
+
+	{% endif %}
+
+			$('#myModal').on('hide.bs.modal', function (e) {
+		  location.reload();
+		});
+
 {% endblock %}
 
 {% block content %}
+
+{% if model == "Barcode"%}
+
+	{{barcode_obj}}
+	<br>
+	<p></p>
+	<p id="barcode_lnk"></p>
+	<br>
+
+{% endif %}
+
 <table class="table table-striped sortable">
     <thead>
       <tr>
       	<th data-defaultsort='disabled'>
       		{% if no_display %}
       		{% else %}
-      		{% if object_list.0.is_user_editable or user.is_superuser%}<a href="./new" title="Add"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>{% endif %}
+	      		{% if object_list %}
+		      		{% if object_list.0.is_user_editable or user.is_superuser %}<a href="./new" title="Add"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>{% endif %}
+		      	{% else %} {% if  add_lnk %} <a href="./new" title="Add"><span class="glyphicon glyphicon-plus-sign"></span> Add</a>{% endif %}{% endif %}
       		{% endif %}
     		</th>
       		<th>Name</th>
       		{% if object_list.0.has_etxra_list_fields %} {{ object_list.0.get_extra_list_fields_headers }} {% endif %}
-      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Operations</th>{% endif %}
+      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Edit</th>{% endif %}
+      		{% if object_list.0.is_user_editable or user.is_superuser%}<th data-defaultsort='disabled'>Delete</th>{% endif %}
 
       		{% if object_list.0.has_status %}<th>Status</th>{% endif %}
       </tr>
@@ -121,8 +234,11 @@
       	<td><input type="checkbox" value="{{object.id }}" name="{% if object.name %}{{ object.name }}{% else %}{{object.get_name}}{% endif %}"></td>
       	<td><a href="{{object.get_absolute_details_url}}">{% if object.name %}{{ object.name }}{% else %}{{object.get_name}}{% endif %}</a></td>
       	{% if object.has_etxra_list_fields %}{{ object.get_extra_list_fields }}{% endif %}
-      	{% if object_list.0.is_user_editable or user.is_superuser%}<td><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit">   </i>   </a><a href="{{object.get_absolute_delete_url}}"><i class="glyphicon glyphicon glyphicon-remove"></i></a></td>{% endif %}
-      	{% if object.has_status %}<td class="{{object.get_class_status}}"><i {% if object.get_status %} class="glyphicon glyphicon-ok " {% else %} class="glyphicon glyphicon-warning-sign " {% endif %} ></i></td>{% endif %}
+      	{% if user.is_superuser %} <td><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit"></i></a></td>{% elif not object.is_locked and  object.is_user_editable and object.is_user_owned  %}<td><a href="{{object.get_absolute_edit_url}}"><i class="glyphicon glyphicon-edit"></i></a></td>{% else %}<td></td> {% endif %}
+      	{% if user.is_superuser %} <td><a href="{{object.get_absolute_delete_url}}"><i class="glyphicon glyphicon glyphicon-remove"></i></a></td> {% elif not object.is_locked and  object.is_user_editable and object.is_user_owned %}<td><a href="{{object.get_absolute_delete_url}}"><i class="glyphicon glyphicon glyphicon-remove"></i></a></td>{% else %}<td></td> {% endif %}
+
+
+      	{% if object.has_status %}<td class=><span class="label label-{{object.get_class_status}}"><i {% if object.get_status %} class="glyphicon glyphicon-ok " {% else %} class="glyphicon glyphicon-warning-sign "{% endif %} ></i> {{object.get_status_msg}}</span></td>{% endif %}
       </tr>
     {% endfor %}
     </tbody>
