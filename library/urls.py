@@ -7,6 +7,7 @@ from django.db.models import get_app, get_models
 from django.utils.decorators import method_decorator
 from library.views import *
 
+from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 # my_aut_urls=[]
 # for model in get_models(get_app("library")):
 # 	m=str(model._meta)[str(model._meta).find('.')+1:]
@@ -16,8 +17,11 @@ from library.views import *
 #
 # print(my_aut_urls)
 
+dajaxice_autodiscover()
+
+
 urlpatterns = patterns('',
-	url('^$', 'library.views.dashboard',name='dashboard'),
+	url('^$', SecretListView.as_view(model = Library,paginate_by = '100'),name='dashboard'),
   url(r'^login/$', 'django.contrib.auth.views.login', {'template_name': 'library/login.html'}),
   url(r'^logout/$', 'django.contrib.auth.views.logout'),
 	url(r'^uuid/(?P<uuid>[\w\-]+)$', SecretDetailView.as_view(), name='uuid_details'),
@@ -39,5 +43,11 @@ urlpatterns = patterns('',
 	url(r'^tagvalues/new$', SecretCreateView.as_view(model = TagValues , success_url= reverse_lazy('tagvalues_list')), name='tagvalues_new'),
 	url(r'^tagvalues/delete/(?P<pk>\d+)$', SecretDeleteView.as_view(model = TagValues  , success_url= reverse_lazy('tagvalues_list')), name='tagvalues_delete'),
 	url(r'^tagvalues/edit/(?P<pk>\d+)$', SecretUpdateView.as_view(model = TagValues ,success_url= reverse_lazy('tagvalues_list')), name='tagvalues_edit'),
+  url(r'^drop/(?P<pk>\d+)$', 'library.views.drop_to_library',name='drop_to_library'),
+	url(r'^tag/(?P<pk>\d+)$', SecretDetailView.as_view(model = Tag), name='tag_details'),
+	url(r'^tag/$', SecretListView.as_view(model = Tag,paginate_by = '20'), name='tag_list'),
+	url(r'^tag/new$', SecretCreateView.as_view(model = Tag , success_url= reverse_lazy('tag_list')), name='tag_new'),
+	url(r'^tag/delete/(?P<pk>\d+)$', SecretDeleteView.as_view(model = Tag  , success_url= reverse_lazy('tag_list')), name='tag_delete'),
+	url(r'^tag/edit/(?P<pk>\d+)$', SecretUpdateView.as_view(model = Tag ,success_url= reverse_lazy('tag_list')), name='tag_edit'),
 
 )
