@@ -39,7 +39,7 @@ class auto_model(models.Model):
 		else:
 			for field in self._meta.fields:
 				if field.get_internal_type() == "ForeignKey" and getattr(self,field.name)!=None :
-					tmp=field.related.parent_model.objects.get(pk=field.value_to_string(self))
+					tmp=field.related.parent_models.objects.get(pk=field.value_to_string(self))
 					if hasattr(tmp,'get_absolute_details_url'):
 						tmp=("<a href='{}'>{}</a>").format(tmp.get_absolute_details_url(),(getattr(self,field.name)).get_name())
 					else :tmp=getattr(self,field.name)
@@ -177,4 +177,23 @@ class Attachment(auto_model):
 	@classmethod
 	def is_user_editable(cls):return True
 
+class read_group_tracking(auto_model):
+	project = models.ForeignKey(Project)
+	tracking_id = models.CharField(max_length=100)
+	condition = models.CharField(max_length=100)
+	replicate = models.IntegerField(default=0)
+	FPKM = models.FloatField(default=0)
 
+class gene_exp(auto_model):
+	test_id= models.CharField(max_length=100)
+	sample_1= models.CharField(max_length=100)
+	sample_2= models.CharField(max_length=100)
+	p_value=models.FloatField(default=0)
+	q_value=models.FloatField(default=0)
+	FC=models.FloatField(default=0)
+	SEM_1=models.FloatField(default=0)
+	SEM_2	=models.FloatField(default=0)
+
+class flag(auto_model):
+	flag = models.BooleanField(editable=False,default=False)
+	operation = models.CharField(max_length=100)
