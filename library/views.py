@@ -102,6 +102,9 @@ def csv_import(request, *args, **kwargs):
 				os.remove(new_file.file.path)
 				new_file.delete()
 				error=[]
+
+
+
 				return HttpResponse(json.dumps({'class':'alert alert-success','msg':ret}))
 	except Exception as e:
 		for i in create_log:i.delete()

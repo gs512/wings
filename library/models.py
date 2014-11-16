@@ -6,6 +6,7 @@ from django.contrib.auth.models import User,Group
 from django_extensions.db.fields import UUIDField
 from datetime import datetime
 from library.current_user import get_current_user,get_current_user_groups,get_current_user_is_super
+from natsort import natsorted
 
 # Create your models here.
 
@@ -39,7 +40,8 @@ class auto_model(models.Model):
 		else:
 			for field in self._meta.fields:
 				if field.get_internal_type() == "ForeignKey" and getattr(self,field.name)!=None :
-					tmp=field.related.parent_models.objects.get(pk=field.value_to_string(self))
+# 					print(field.related.parent_model,vars(field.related))
+					tmp=field.related.parent_model.objects.get(pk=field.value_to_string(self))
 					if hasattr(tmp,'get_absolute_details_url'):
 						tmp=("<a href='{}'>{}</a>").format(tmp.get_absolute_details_url(),(getattr(self,field.name)).get_name())
 					else :tmp=getattr(self,field.name)
@@ -171,6 +173,15 @@ class TagValues(auto_model):
 
 class Project(auto_model):
 	libraries = models.ManyToManyField(Library)
+
+	def get_fields(self):
+		f=super().get_fields()
+		lib_list="<ul>"
+		for l in natsorted(self.libraries.all().values_list('library_alias','name','id')):
+			lib_list+=("<li><a href='{}'>{} - {}</a></li>").format(Library.objects.get(pk=l[2]).get_absolute_details_url(),l[0],l[1])
+
+		f.append(['libraries ',mark_safe(lib_list+"</ul>")])
+		return f
 
 class Attachment(auto_model):
 	file = models.FileField(upload_to='files/%Y/%m/%d')
