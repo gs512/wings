@@ -161,16 +161,6 @@ class Library(auto_model):
 					else :f.append(getattr(self,field.name))
 		return f
 
-
-class Tag(auto_model):
-	libraries_group = models.ManyToManyField(Library, through='TagValues',through_fields=('tag','library'))
-
-class TagValues(auto_model):
-	tag = models.ForeignKey(Tag)
-	library = models.ForeignKey(Library)
-	tag_value = models.CharField(max_length=255)
-	tag_number = models.IntegerField()
-
 class Project(auto_model):
 	libraries = models.ManyToManyField(Library)
 
@@ -182,6 +172,17 @@ class Project(auto_model):
 
 		f.append(['libraries ',mark_safe(lib_list+"</ul>")])
 		return f
+
+class Tag(auto_model):
+	libraries_group = models.ManyToManyField(Library, through='TagValues',through_fields=('tag','library'))
+	project = models.ForeignKey(Project,null=True,blank=True)
+
+class TagValues(auto_model):
+	tag = models.ForeignKey(Tag)
+	library = models.ForeignKey(Library)
+	tag_value = models.CharField(max_length=255)
+	tag_number = models.IntegerField()
+
 
 class Attachment(auto_model):
 	file = models.FileField(upload_to='files/%Y/%m/%d')
