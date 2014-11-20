@@ -210,6 +210,9 @@ class gene_exp(auto_model):
 	FC=models.FloatField(default=0)
 	SEM_1=models.FloatField(default=0)
 	SEM_2	=models.FloatField(default=0)
+	fpkm_1=models.FloatField(default=0)
+	fpkm_2=models.FloatField(default=0)
+	inf = models.BooleanField(editable=False,default=False)
 
 class flag(auto_model):
 	flag = models.BooleanField(editable=False,default=False)
