@@ -198,7 +198,7 @@ class read_group_tracking(auto_model):
 	def __init__(self, *args, **kwargs):
 		models.Model.__init__(self, *args, **kwargs)
 		if self.id != None:
-			self.name = u"{}_{}".format(condition,tracking_id)
+			self.name = u"{}_{}".format(self.condition,self.tracking_id)
 
 
 class gene_exp(auto_model):
