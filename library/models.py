@@ -195,6 +195,11 @@ class read_group_tracking(auto_model):
 	condition = models.CharField(max_length=100)
 	replicate = models.IntegerField(default=0)
 	FPKM = models.FloatField(default=0)
+	def __init__(self, *args, **kwargs):
+		models.Model.__init__(self, *args, **kwargs)
+		if self.id != None:
+			self.name = u"{}_{}".format(condition,tracking_id)
+
 
 class gene_exp(auto_model):
 	test_id= models.CharField(max_length=100)
