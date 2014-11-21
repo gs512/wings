@@ -1,5 +1,8 @@
 from library.models import *
 from django.contrib.auth.models import Group
+import math,numpy
+from scipy import stats
+import statistics
 
 # wd=os.getcwd()
 
@@ -35,5 +38,7 @@ for v in s:
 		FC=math.log((fpkm_2/fpkm_1),2)
 	else :FC=float(inf);inf=False;
 
-	g=gene_exp(test_id=gene,sample_1=cond_1,sample_2=cond_2,p_value=PV,FC=FC,fpkm_1=fpkm_1,fpkm_2=fpkm_2,q_value=line[13],SEM_1=stats.sem(read_group_tracking.objects.get(project=p,tracking_id=gene,condition=cond_1).value('FPKM')),SEM_2=stats.sem(read_group_tracking.objects.get(project=p,tracking_id=gene,condition=cond_2).value('FPKM')))
+	g=gene_exp(created_by=u,inf=inf,test_id=gene,sample_1=cond_1,sample_2=cond_2,p_value=PV,FC=FC,fpkm_1=fpkm_1,fpkm_2=fpkm_2,q_value=line[13],\
+	SEM_1=stats.sem([ i['FPKM'] for i in read_group_tracking.objects.filter(project=p,tracking_id=gene,condition=cond_1).values('FPKM')]),\
+	SEM_2=stats.sem([ i['FPKM'] for i in read_group_tracking.objects.filter(project=p,tracking_id=gene,condition=cond_2).values('FPKM')]))
 	g.save()
