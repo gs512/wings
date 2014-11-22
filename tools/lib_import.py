@@ -4,12 +4,12 @@ import sys
 import json
 
 
-myFile = open("wngs_lib.tsv","r").read().splitlines()
+myFile = open("/Users/gs/Desktop/w.tsv","r").read().splitlines()
 
 for line in myFile:
 	line=line.replace(',','').replace("\t\t","\t").split("\t")
 	print((("""l=Library(
-	name = "{}",	
+	name = "{}",
 	library_id = "{}",
 	reads_type = "{}",
 	flowcell_id = "{}",
@@ -27,5 +27,5 @@ for line in myFile:
 	library_alias = "{}",
 	reads_mapped_refseq = {},
 	lld = {},
-	replicate = {} 
+	replicate = {}
 );l.save();""").format(line[0],line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7],line[8],line[9],line[10],line[11],line[12],line[13],line[14],line[15],line[22],line[23])).replace('\n','').replace('\t',''))
