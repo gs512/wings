@@ -67,3 +67,32 @@ Attachments :
 
 
 {% endblock %}
+
+{% block js %}
+	$('.diag_check').click(function(e){
+		var table= $(e.target).closest('table');
+		var rowCount = $('#cmp_table tr').length-1;
+		var i=1
+		var start=parseInt($(this).attr("start"))
+		console.log(start)
+		if($(this).hasClass("checked"))
+		{
+			for(;i<=rowCount;i++){
+				$('tr:eq('+i+') td:eq('+parseInt(i+start)+') input:checkbox',table).prop("checked",false)
+			}
+			$(this).removeClass("checked")
+		}
+		else{
+			for(;i<=rowCount;i++){
+				$(' tr:eq('+i+') td:eq('+parseInt(i+start)+') input:checkbox',table).prop("checked",true)
+			}
+			$(this).addClass("checked")
+		}
+
+	});
+	$('#sub_cmp').click(function(e){
+
+		var checkedVals = $('input:checkbox:checked').map(function() {return this.value;}).get();
+		 window.location.replace("/library/table/"+checkedVals);
+	});
+{% endblock %}

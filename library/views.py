@@ -24,6 +24,13 @@ from pprint import pprint
 from subprocess import Popen, PIPE
 import subprocess, os
 from django.core import serializers
+import math,numpy
+from scipy import stats
+import statistics
+import collections
+# from django_datatables_view.base_datatable_view import BaseDatatableView
+
+
 # Create your views here.
 
 import logging
@@ -82,35 +89,63 @@ def drop_to_library(request, *args, **kwargs):
 @login_required(login_url='/library/login/')
 def csv_import(request, *args, **kwargs):
 	try:
-		if request.method == 'POST':
-			create_log=[]
-			form = UploadFileForm(request.POST, request.FILES)
-			if form.is_valid():
-				new_file = Attachment(file = request.FILES['file'])
-				new_file.name=request.FILES['file']
-				new_file.save()
-				if not (new_file.file.path.endswith('.csv') or new_file.file.path.endswith('.tsv')):
-					os.remove(new_file.file.path)
-					new_file.delete()
-					data = {'class': 'alert alert-danger','msg':"Wrong File Type"}
-					return HttpResponse(json.dumps(data))
-
-				myFile=open(new_file.file.path,"r").read().replace('"','').replace("'",'').replace(',',"\t").splitlines()
-	# 			for i in range(len(myFile)):
-	# 				while '\t\t' in myFile[i]:myFile[i]=myFile[i].replace('\t\t','\t')
-				csv=new_file.name
-				os.remove(new_file.file.path)
-				new_file.delete()
-				error=[]
+		TagValues.objects.all().delete()
+		p = Project.objects.get(pk=1)
+		u = User.objects.get(username="gs")
+		for i in Library.objects.all():
+			tv=(i.library_alias).split('_')[0]
+			t=TagValues(tag=Tag.objects.get(name="cell_time_point"),library=i,tag_value=tv,tag_number=1)
+			t.save();
+			tv=(i.library_alias).split('_')[1]
+			t=TagValues(tag=Tag.objects.get(name="zone"),library=i,tag_value=tv,tag_number=2)
+			t.save();
+			tv=(i.library_alias).split('_')[2]
+			tv=tv[0:3]
+			t=TagValues(tag=Tag.objects.get(name="condition"),library=i,tag_value=tv,tag_number=3)
+			t.save();
 
 
 
-				return HttpResponse(json.dumps({'class':'alert alert-success','msg':ret}))
+
+# 		s=open("/home/gas361/wings/tools/gene_exp.diff","r").read().splitlines()[1:]
+# 		for v in s:
+# 		# 	line=v.replace(',',"_").split('\t')
+# 			line = v.split('\t');cond=str(line[4]+","+line[5]);cond_1=line[4];cond_2=line[5];gene=line[0];inf=str(line[9]);FC=0.0;PV=float(line[11]);fpkm_1=float(line[7]);fpkm_2=float(line[8])
+# 			if "inf" in inf:
+# 				inf=True;fpkm_1=fpkm_1+1;fpkm_2=fpkm_2+1;FC=math.log((fpkm_2/fpkm_1),2)
+# 			else :FC=float(inf);inf=False;
+#
+# 			g=gene_exp(created_by=u,inf=inf,test_id=gene,sample_1=cond_1,sample_2=cond_2,p_value=PV,FC=FC,fpkm_1=fpkm_1,fpkm_2=fpkm_2,q_value=line[12],\
+# 			SEM_1=stats.sem([ i['FPKM'] for i in read_group_tracking.objects.filter(project=p,tracking_id=gene,condition=cond_1).values('FPKM')]),\
+# 			SEM_2=stats.sem([ i['FPKM'] for i in read_group_tracking.objects.filter(project=p,tracking_id=gene,condition=cond_2).values('FPKM')]));g.save()# 		if request.method == 'POST':
+# 			create_log=[]
+# 			form = UploadFileForm(request.POST, request.FILES)
+# 			if form.is_valid():
+# 				new_file = Attachment(file = request.FILES['file'])
+# 				new_file.name=request.FILES['file']
+# 				new_file.save()
+# 				if not (new_file.file.path.endswith('.csv') or new_file.file.path.endswith('.tsv')):
+# 					os.remove(new_file.file.path)
+# 					new_file.delete()
+# 					data = {'class': 'alert alert-danger','msg':"Wrong File Type"}
+# 					return HttpResponse(json.dumps(data))
+#
+# 				myFile=open(new_file.file.path,"r").read().replace('"','').replace("'",'').replace(',',"\t").splitlines()
+# 	# 			for i in range(len(myFile)):
+# 	# 				while '\t\t' in myFile[i]:myFile[i]=myFile[i].replace('\t\t','\t')
+# 				csv=new_file.name
+# 				os.remove(new_file.file.path)
+# 				new_file.delete()
+# 				error=[]
+
+
+
+		return HttpResponse(json.dumps({'class':'alert alert-success','msg':ret}))
 	except Exception as e:
-		for i in create_log:i.delete()
+# 		for i in create_log:i.delete()
 		return HttpResponse(json.dumps({'class':'alert alert-success','msg':'something went wrong :'+str(e)}))
-	data = {'form': UploadFileForm()}
-	return render_to_response('main/import.html', data, context_instance=RequestContext(request))
+# 	data = {'form': UploadFileForm()}
+	return HttpResponse(json.dumps({'class':'alert alert-success','msg':ret}))
 
 
 
@@ -391,3 +426,104 @@ class SecretUpdateView(LoginRequiredMixin, SuccessMessageMixin, AjaxTemplateMixi
 			context['form']=form
 		return super(SecretUpdateView, self).render_to_response(context)
 
+class SecretJsonView(LoginRequiredMixin,ListView):
+	columns=[]
+	def dispatch(self, request, *args, **kwargs):
+		a=super(SecretJsonView, self).get(request, *args, **kwargs)
+		cmp=(kwargs['cmd'][1:]).split(',')
+		self.columns=cmp
+		
+# 		for x in cmp:
+# 			self.columns.append(x)
+# 			self.columns.append('FC')
+# 			self.columns.append('p_value')
+		return HttpResponse(json.dumps(self.get_queryset()), content_type="application/json")
+		return(a)
+
+	def get_queryset(self):
+		p=Project.objects.get(pk=1)
+		res={}
+		glist=read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct()[:5]
+# 		print(glist)
+		res=[]
+		for gene in glist:
+			tmp_d=collections.OrderedDict()	
+			g=gene[0]
+# 			tmp_d['id']=g[1]
+			tmp_d["gene_id"]=g
+			for x in self.columns:
+				x=x.split(' ')
+				tmp=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id=g).values_list('FC','p_value')
+# 				res[g][str(' '.join(x))]=tmp[0]
+				tmp_d[(str('_'.join(x))+"_FC").lower()]=tmp[0][0]
+				tmp_d[(str('_'.join(x))+"_p_value").lower()]=tmp[0][1]
+				
+			res.append(tmp_d)
+				
+		return({"records":res,"queryRecordCount":len(res),"totalRecordCount":read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct().count() })
+		
+def get_head(request, *args, **kwargs):
+	cmp=(kwargs['cmd'][1:]).split(',')
+	ret="<th>gene_id</th>"
+	for x in cmp:
+		x=x.replace(' ','_').lower()
+		ret+=("<th>{}_fc</th><th>{}_p_value</th>").format(x,x)
+	return HttpResponse("<thead>"+ret+"</thead><tbody></tbody>")
+
+# 		return read_group_tracking.objects.filter(pk=1) 
+		
+	
+# class OrderListJson(BaseDatatableView):
+# 	model = gene_exp
+# 
+# 	# define the columns that will be returned
+# 	columns = ['test_id', 'FC', 'p_value']
+# 
+# 	# define column names that will be used in sorting
+# 	# order is important and should be same as order of columns
+# 	# displayed by datatables. For non sortable columns use empty
+# 	# value like ''
+# 	order_columns = ['test_id', 'FC', 'p_value']
+# 
+# 	# set max limit of records returned, this is used to protect our site if someone tries to attack our site
+# 	# and make it return huge amount of data
+# 	max_display_length = 50
+# 
+# 	def get(self, request, *args, **kwargs):
+# 		a=super(BaseDatatableView, self).get(request, *args, **kwargs)
+# 		cmp=(kwargs['cmd'][1:]).split(',')
+# 		self.columns=['test_id']
+# 		for x in cmp:
+# 			self.columns.append(x)
+# 			self.columns.append('FC')
+# 			self.columns.append('p_value')
+# 		self.order_columns = self.columns[:]
+# 		print(self.order_columns)
+# 		return(a)
+# 
+# 	def render_column(self, row, column):
+# 	    # We want to render user as a custom column
+# 	    if column == 'user':
+# 	        return '{0} {1}'.format(row.customer_firstname, row.customer_lastname)
+# 	    else:
+# 	        return super(OrderListJson, self).render_column(row, column)
+# 
+# 	def filter_queryset(self, qs):
+# 	    # use parameters passed in POST request to filter queryset
+# 
+# 	    # simple example:
+# 	    search = self.request.POST.get('search[value]', None)
+# 	    if search:
+# 	        qs = qs.filter(cond_1=search)
+# 
+# 	    # more advanced example using extra parameters
+# 	    filter_customer = self.request.POST.get('cond_2', None)
+# 
+# # 	    if filter_customer:
+# # 	        customer_parts = filter_customer.split(' ')
+# # 	        qs_params = None
+# # 	        for part in customer_parts:
+# # 	            q = Q(customer_firstname__istartswith=part)|Q(customer_lastname__istartswith=part)
+# # 	            qs_params = qs_params | q if qs_params else q
+# # 	        qs = qs.filter(qs_params)
+# 	    return qs

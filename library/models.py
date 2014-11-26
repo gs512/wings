@@ -7,7 +7,7 @@ from django_extensions.db.fields import UUIDField
 from datetime import datetime
 from library.current_user import get_current_user,get_current_user_groups,get_current_user_is_super
 from natsort import natsorted
-
+import pprint
 # Create your models here.
 
 def modify_fields(**kwargs):
@@ -166,12 +166,104 @@ class Project(auto_model):
 
 	def get_fields(self):
 		f=super().get_fields()
-		lib_list="<ul>"
-		for l in natsorted(self.libraries.all().values_list('library_alias','name','id')):
-			lib_list+=("<li><a href='{}'>{} - {}</a></li>").format(Library.objects.get(pk=l[2]).get_absolute_details_url(),l[0],l[1])
+		lib_list=self.get_lib_tag_table()
+# 		lib_list=lib_list+"<ul>"
+# 		for l in natsorted(self.libraries.all().values_list('library_alias','name','id')):
+# 			lib_list+=("<li><a href='{}'>{} - {}</a></li>").format(Library.objects.get(pk=l[2]).get_absolute_details_url(),l[0],l[1])
 
-		f.append(['libraries ',mark_safe(lib_list+"</ul>")])
+		f.append(['libraries ',mark_safe(lib_list)])
 		return f
+
+	def get_lib_tag_table(self):
+# 		for l in natsorted(self.libraries.all().values_list('library_alias','name','id')):
+		table={}
+		for t in Tag.objects.filter(project=self):
+			tv=TagValues.objects.filter(tag=t)[0]
+			table[tv.tag_number]={t.name:[]}
+# 			print(tv.tag_number,t.name)
+			tv_l=TagValues.objects.filter(tag_number=tv.tag_number).order_by().values_list('tag_value',flat=True).distinct()
+			table[tv.tag_number][t.name]=tv_l
+
+		ret=""
+		tag_head="<td>#</td><td> Sample Name </td><td> Alias </td>"
+		tag_head_value="<td></td><td></td><td></td>"
+		html=""
+		lib_line=""
+		lib_list=""
+		for k in table:
+			for t in table[k]:
+				tag_head+="<td colspan='{}'>{}</td>".format(len(table[k][t]),t)
+				for tv in table[k][t]:tag_head_value+="<td>{}</td>".format(tv)
+# 				ret+="<p>{} : {}</p>".format(t,str(table[k][t]))
+		t_l=[]
+		for k in table:
+			for v in table[k]:
+				for x in table[k][v]:t_l.append(x)
+		cpt=1
+		for l in natsorted(self.libraries.all().values_list('library_alias','name','id')):
+			lib_list+=("<tr><td>{}</td><td><a href='{}'>{}</a></td><td><a href='{}'>{}</a></td>").format(cpt,Library.objects.get(pk=l[2]).get_absolute_details_url(),l[1],Library.objects.get(pk=l[2]).get_absolute_details_url(),l[0])
+			tv=TagValues.objects.filter(library=Library.objects.get(pk=l[2])).values_list('tag_value',flat=True)
+			flags=""
+			cpt+=1
+			for i in t_l:
+				if i in tv:flags+="<td>X</td>"
+				else: flags+="<td></td>"
+
+			lib_list+=flags+"</tr>"
+
+		tag_head=self.cmp_matrix()+"<table class='table table-bordered table-striped'><thead><tr>"+tag_head+"</tr><tr>"+tag_head_value+"</tr></thead><tbody>"+lib_list+"</tbody></table>"
+
+		return tag_head
+
+	def cmp_matrix(self):
+		for t in Tag.objects.filter(project=self):
+			v=TagValues.objects.filter(tag=t).values_list('tag_value',flat=True).distinct()
+			if len(v)==2:
+				horiz=TagValues.objects.filter(tag=t,tag_value=v[0]).values_list('library',flat=True)
+				vert=TagValues.objects.filter(tag=t,tag_value=v[1]).values_list('library',flat=True)
+				horiz=natsorted([x[:-1] for x in self.libraries.filter(replicate=1,pk__in=horiz).values_list('library_alias',flat=True)])
+				vert=natsorted([x[:-1] for x in self.libraries.filter(replicate=1,pk__in=vert).values_list('library_alias',flat=True)])
+				ret="</td><td>".join(horiz)
+				bod=""
+				for lib in vert:
+					cnt=("<td>{}</td>").format(lib)
+					for i in range(len(horiz)):
+						cnt+=("<td>{}</td>").format('<input type="checkbox" value="'+lib+' '+horiz[i]+'">')
+					bod+=("<tr>{}</tr>").format(cnt)
+
+				main_table="<table id='cmp_table' class='table-bordered table-striped table'><thead><td><a href='#cmp_table' class='diag_check' start='0' id=''>Un/Check Diagonal</a><td/>"+ret[:-4]+"</td></thead><tbody>"+bod+"<tbody></table>"
+
+				ret="</td><td>".join(horiz)
+				bod=""
+				cpt=0
+				for lib in horiz:
+					cnt=("<td>{}</td>").format(lib)
+					for i in range(len(horiz)):
+						if i>cpt:
+							cnt+=("<td>{}</td>").format('<input type="checkbox" value="'+lib+' '+horiz[i]+'">')
+						else:cnt+=("<td></td>")
+					bod+=("<tr>{}</tr>").format(cnt)
+					cpt+=1
+				sec_table="<table id='2nd_table' class='table-bordered table-striped table'><thead><td><a href='#cmp_table' class='diag_check' id='' start='1' >Un/Check Diagonal</a><td/>"+ret[:-4]+"</td></thead><tbody>"+bod+"<tbody></table>"
+
+				ret="</td><td>".join(vert)
+				bod=""
+				cpt=0
+				for lib in vert:
+					cnt=("<td>{}</td>").format(lib)
+					for i in range(len(vert)):
+						if i>cpt:
+							cnt+=("<td>{}</td>").format('<input type="checkbox" value="'+lib+' '+vert[i]+'">')
+						else:cnt+=("<td></td>")
+					bod+=("<tr>{}</tr>").format(cnt)
+					cpt+=1
+				thi_table="<table id='3nd_table' class='table-bordered table-striped table'><thead><td><a href='#cmp_table' class='diag_check' id='' start='1'>Un/Check Diagonal</a><td/>"+ret[:-4]+"</td></thead><tbody>"+bod+"<tbody></table><a id='sub_cmp' href='#cmp_table'>Submit</a>"
+
+
+				return(main_table+sec_table+thi_table)
+		return ""
+
+
 
 class Tag(auto_model):
 	libraries_group = models.ManyToManyField(Library, through='TagValues',through_fields=('tag','library'))
@@ -198,11 +290,7 @@ class read_group_tracking(auto_model):
 	def __init__(self, *args, **kwargs):
 		models.Model.__init__(self, *args, **kwargs)
 		if self.id != None:
-<<<<<<< HEAD
 			self.name = u"{}_{}".format(self.condition,self.tracking_id)
-=======
-			self.name = u"{}_{}".format(condition,tracking_id)
->>>>>>> a06d8341be4fcb5e04d35f280ef546a882cdd26a
 
 
 class gene_exp(auto_model):
@@ -214,12 +302,9 @@ class gene_exp(auto_model):
 	FC=models.FloatField(default=0)
 	SEM_1=models.FloatField(default=0)
 	SEM_2	=models.FloatField(default=0)
-<<<<<<< HEAD
 	fpkm_1=models.FloatField(default=0)
 	fpkm_2=models.FloatField(default=0)
 	inf = models.BooleanField(editable=False,default=False)
-=======
->>>>>>> a06d8341be4fcb5e04d35f280ef546a882cdd26a
 
 class flag(auto_model):
 	flag = models.BooleanField(editable=False,default=False)

@@ -40,6 +40,8 @@ INSTALLED_APPS = (
     'library',
     'dajaxice',
     'dajax',
+    'debug_toolbar',
+#     'django_datatables_view',
 
 
 )
@@ -47,12 +49,15 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'library.current_user.CurrentUserMiddleware',
+
+
 )
 
 ROOT_URLCONF = 'wings.urls'
@@ -64,9 +69,15 @@ WSGI_APPLICATION = 'wings.wsgi.application'
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
 DATABASES = {
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    #}
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'OPTIONS': {
+            'read_default_file': os.path.join(BASE_DIR,'my.cnf'),
+        },
     }
 }
 
@@ -136,3 +147,4 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "wings/static"),
 #     '/var/www/static/',
 )
+INTERNAL_IPS = ('127.0.0.1','10.225.11.141','0.0.0.0','10.224.83.117')
