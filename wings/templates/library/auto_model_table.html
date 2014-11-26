@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}
+<!-- {{request.META.PATH_INFO|cut:"/"|cut:"library"|capfirst}} -->
+
+<ul class="nav nav-pills nav-left">
+<li><a href="#" class="no_link"><strong><i class="glyphicon glyphicon-dashboard"></i>{{model }}</strong></a></li>
+
+</ul>
+<hr>
+
+ {% endblock %}
+
+
+
+
+{% block js %}
+
+$.post("/library/get_head/"+window.location.pathname.split('table/')[1],{csrfmiddlewaretoken: '{{ csrf_token }}'},function(data){
+	$("#my_t").html(data)
+
+	$('#my_t').dynatable({
+	  dataset: {
+	    ajax: true,
+	    ajaxUrl: "/library/data/"+window.location.pathname.split('table/')[1],
+	    ajaxOnLoad: true,
+	    records: [],
+	  }
+	});
+
+
+});
+
+
+{% endblock %}
+
+{% block content %}
+<table id="my_t" class=" table table-bordered table-striped">
+	
+</table>
+{% endblock %}
+
