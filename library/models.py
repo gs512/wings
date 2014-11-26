@@ -198,7 +198,11 @@ class read_group_tracking(auto_model):
 	def __init__(self, *args, **kwargs):
 		models.Model.__init__(self, *args, **kwargs)
 		if self.id != None:
+<<<<<<< HEAD
 			self.name = u"{}_{}".format(self.condition,self.tracking_id)
+=======
+			self.name = u"{}_{}".format(condition,tracking_id)
+>>>>>>> a06d8341be4fcb5e04d35f280ef546a882cdd26a
 
 
 class gene_exp(auto_model):
@@ -210,9 +214,12 @@ class gene_exp(auto_model):
 	FC=models.FloatField(default=0)
 	SEM_1=models.FloatField(default=0)
 	SEM_2	=models.FloatField(default=0)
+<<<<<<< HEAD
 	fpkm_1=models.FloatField(default=0)
 	fpkm_2=models.FloatField(default=0)
 	inf = models.BooleanField(editable=False,default=False)
+=======
+>>>>>>> a06d8341be4fcb5e04d35f280ef546a882cdd26a
 
 class flag(auto_model):
 	flag = models.BooleanField(editable=False,default=False)
