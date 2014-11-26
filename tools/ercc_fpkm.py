@@ -33,7 +33,6 @@ print """
 """% (lab,cut)
 
 
-<<<<<<< HEAD
 
 # for root, dirnames, filenames in os.walk(myDir):
 #     files.extend(glob.glob(root + "/genes.fpkm_tracking"))
@@ -61,9 +60,9 @@ print """
 # echo " paste \\ ";find . -name "accepted_hits.bam"|sort  | grep "1st\|2nd" | grep ERCC| while read file ; do  echo " <(samtools idxstats $file | cut -f3)\ " ; done
 # remove last line
 #find . -name "accepted_hits.bam"|sort  |  grep ERCC| while read file ; do  echo "$(echo $file|cut -d'/' -f2 | sed -e 's/_ERCC_OUT//') " ; done -> add Header
-=======
+
 # ./ercc_fpkm.py
 # ./ercc_count.py
->>>>>>> a06d8341be4fcb5e04d35f280ef546a882cdd26a
+
 # ./sql.py count.txt fpkm.txt > sql.txt ( ajouter le header ID + condition )
 # insert sql
