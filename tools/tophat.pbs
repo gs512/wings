@@ -1,0 +1,15 @@
+#!/bin/sh
+#PBS -V
+#PBS -l nodes=1:ppn=4,walltime=46:00:00
+#PBS -M gas361@nyu.edu
+#PBS -m abe
+#PBS -q s48
+#PBS -l mem=46GB
+
+module load  tophat/intel/2.0.12 bowtie2/intel/2.2.3 cufflinks/intel/2.2.0 samtools/intel/0.1.19
+cd $WD
+#bowtie2-build /scratch/gas361/XAVIER/Mus_musculus/genome_ercc.fa /scratch/gas361/XAVIER/Mus_musculus/mouse_genome_ercc
+
+tophat2 -p16 --no-novel-juncs --no-coverage-search -o $OUTPUT -G $GTF $IDX $FQ1 $FQ2
+#tophat2 -R $FLD
+exit 0;
