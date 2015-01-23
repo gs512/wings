@@ -38,7 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     'library',
-    'debug_toolbar',
+
 #     'django_datatables_view',
 
 
@@ -47,7 +47,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
@@ -145,4 +144,3 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "wings/static"),
 #     '/var/www/static/',
 )
-INTERNAL_IPS = ('127.0.0.1','10.225.11.141','0.0.0.0','10.224.83.117')
