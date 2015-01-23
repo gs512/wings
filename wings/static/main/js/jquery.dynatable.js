@@ -1550,7 +1550,7 @@
                 urlOptions[label][attr] = data[label][attr];
               } else {
                 if($.inArray(urlOptions,label)>-1){
-									console.log($.inArray(urlOptions,label),urlOptions,label)
+									//console.log($.inArray(urlOptions,label),urlOptions,label)
 	                delete urlOptions[label][attr];
 	                }
 
