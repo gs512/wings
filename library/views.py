@@ -467,37 +467,35 @@ class SecretJsonView(LoginRequiredMixin,ListView):
 		res=[]
 		my_res={}
 		my_cnt=0
-		for x in self.columns:
-			x=x.split(' ')
-			if len(self.search)>0:
-				my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id__icontains=self.search).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
-				my_cnt = len(my_g)
-			else:
-				my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
-				if gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
-					my_cnt = gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
-
-				if len(my_g)<1:
-					my_g=gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
-					if gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
-						my_cnt = gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
-
-			for tmp in my_g:
-				if tmp[6] not in my_res:
-					my_res[tmp[6]]=collections.OrderedDict()
-					my_res[tmp[6]]["gene_id"]=tmp[6]
-
-				my_res[tmp[6]][(str('_'.join(x))+"_FC").lower()]=tmp[0]
-				my_res[tmp[6]][(str('_'.join(x))+"_p_value").lower()]=tmp[1]
-				my_res[tmp[6]][(str('_'.join(x))+"_fpkm_1").lower()]=tmp[2]
-				my_res[tmp[6]][(str('_'.join(x))+"_SEM_1").lower()]=tmp[3]
-				my_res[tmp[6]][(str('_'.join(x))+"_fpkm_2").lower()]=tmp[4]
-				my_res[tmp[6]][(str('_'.join(x))+"_SEM_2").lower()]=tmp[5]
-# 				res.append(tmp_d)
-
-
+		if self.csv==0:
+			for x in self.columns:
+				x=x.split(' ')
+				if len(self.search)>0:
+					my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id__icontains=self.search).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+					my_cnt = len(my_g)
+				else:
+					my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+					if gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
+						my_cnt = gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
+	
+					if len(my_g)<1:
+						my_g=gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+						if gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
+							my_cnt = gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
+	
+				for tmp in my_g:
+					if tmp[6] not in my_res:
+						my_res[tmp[6]]=collections.OrderedDict()
+						my_res[tmp[6]]["gene_id"]=tmp[6]
+	
+					my_res[tmp[6]][(str('_'.join(x))+"_FC").lower()]=tmp[0]
+					my_res[tmp[6]][(str('_'.join(x))+"_p_value").lower()]=tmp[1]
+					my_res[tmp[6]][(str('_'.join(x))+"_fpkm_1").lower()]=tmp[2]
+					my_res[tmp[6]][(str('_'.join(x))+"_SEM_1").lower()]=tmp[3]
+					my_res[tmp[6]][(str('_'.join(x))+"_fpkm_2").lower()]=tmp[4]
+					my_res[tmp[6]][(str('_'.join(x))+"_SEM_2").lower()]=tmp[5]
 		
-		if self.csv>0:
+		else :
 			my_res={}
 			response = HttpResponse(content_type='text/csv')
 			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
@@ -534,15 +532,13 @@ class SecretJsonView(LoginRequiredMixin,ListView):
 			writer.writerow(header)
 			for i in [ x for x in my_res.values()]:
 				row=[i['gene_id']]
-				print(i)
 				for h in header[1:]:
-					print(h)
 					if h.lower() in i:
 						row.append(i[h.lower()])
 					else: row.append('')
 				writer.writerow(row)
-				
 			return response
+			
 		res=[ x for x in my_res.values()][(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
 		return({"records":res,"queryRecordCount":my_cnt,"totalRecordCount":read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct().count() })
 
