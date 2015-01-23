@@ -1549,7 +1549,11 @@
                 if (typeof urlOptions[label] === 'undefined') { urlOptions[label] = {}; }
                 urlOptions[label][attr] = data[label][attr];
               } else {
-                delete urlOptions[label][attr];
+                if($.inArray(urlOptions,label)>-1){
+									console.log($.inArray(urlOptions,label),urlOptions,label)
+	                delete urlOptions[label][attr];
+	                }
+
               }
             }
             continue;
@@ -1559,7 +1563,8 @@
           if (data[label]) {
             urlOptions[label] = data[label];
           } else {
-            delete urlOptions[label];
+            if($.inArray(urlOptions,label)>-1)delete urlOptions[label];
+            // delete urlOptions[label];
           }
         }
       }

@@ -3,6 +3,7 @@
 <!-- {{request.META.PATH_INFO|cut:"/"|cut:"library"|capfirst}} -->
 
 <ul class="nav nav-pills nav-left">
+
 <li><a href="#" class="no_link"><strong><i class="glyphicon glyphicon-dashboard"></i>{{model }}</strong></a></li>
 
 </ul>
@@ -14,19 +15,62 @@
 
 
 {% block js %}
+$('#fc').val('')
+$('#pvalue').val('')
+
 
 $.post("/library/get_head/"+window.location.pathname.split('table/')[1],{csrfmiddlewaretoken: '{{ csrf_token }}'},function(data){
 	$("#my_t").html(data)
 
-	$('#my_t').dynatable({
+	var dyna = $('#my_t').dynatable({
 	  dataset: {
 	    ajax: true,
-	    ajaxUrl: "/library/data/"+window.location.pathname.split('table/')[1],
+	     ajaxMethod: 'GET',
+	    ajaxUrl: window.location.href.replace('table','data'),
 	    ajaxOnLoad: true,
 	    records: [],
 	  }
-	});
+	}).bind('dynatable:afterUpdate',function(){
+		$('td:contains("undefined")').text('');
+	}).data('dynatable');
 
+$('#pvalue').change( function() {
+  var value = $(this).val();
+  if (value === "" ) {
+    dyna.queries.remove("pvalue");
+  } else {
+    dyna.queries.add("pvalue",value);
+  }
+  dyna.process();
+});
+$('#fc').change( function() {
+  var value = $(this).val();
+  if (value === "") {
+    dyna.queries.remove("fc");
+  } else {
+    dyna.queries.add("fc",value);
+  }
+
+  dyna.process();
+});
+$('#csv').click( function() {
+    $.post("/library/data/"+window.location.pathname.split('table/')[1],{csrfmiddlewaretoken: '{{ csrf_token }}',fc:$('#fc').val(),pvalue:$('#pvalue').val(),search:$('#dynatable-query-search-my_t').val(),csv:1},function(data){
+		csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(data);
+		$('#dl')
+        .attr({
+        'download': 'my.csv',
+            'href': csvData,
+            'target': '_blank'
+    });
+    $('#dl').show();
+
+});
+
+});
+
+$('#dl').click(function(){
+	$(this).hide()
+});
 
 });
 
@@ -34,8 +78,13 @@ $.post("/library/get_head/"+window.location.pathname.split('table/')[1],{csrfmid
 {% endblock %}
 
 {% block content %}
+<a id="csv" href="#">export</a>
+<a id="dl" style="display:none;" target="_blank" href="#dl">download</a>
+<input id="pvalue" name="pvalue" type="text" placeholder="pvalue filter">
+<input id="fc" name="fc" type="text" placeholder="absolute fc filter">
 <table id="my_t" class=" table table-bordered table-striped">
-	
+
 </table>
+
 {% endblock %}
 

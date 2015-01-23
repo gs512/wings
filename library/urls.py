@@ -7,7 +7,7 @@ from django.db.models import get_app, get_models
 from django.utils.decorators import method_decorator
 from library.views import *
 
-from dajaxice.core import dajaxice_autodiscover, dajaxice_config
+#from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 # my_aut_urls=[]
 # for model in get_models(get_app("library")):
 # 	m=str(model._meta)[str(model._meta).find('.')+1:]
@@ -17,7 +17,7 @@ from dajaxice.core import dajaxice_autodiscover, dajaxice_config
 #
 # print(my_aut_urls)
 
-dajaxice_autodiscover()
+#dajaxice_autodiscover()
 
 
 urlpatterns = patterns('',

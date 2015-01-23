@@ -28,6 +28,8 @@ import math,numpy
 from scipy import stats
 import statistics
 import collections
+from cgi import parse_qs, escape
+import csv
 # from django_datatables_view.base_datatable_view import BaseDatatableView
 
 
@@ -428,102 +430,105 @@ class SecretUpdateView(LoginRequiredMixin, SuccessMessageMixin, AjaxTemplateMixi
 
 class SecretJsonView(LoginRequiredMixin,ListView):
 	columns=[]
+	page=1
+	perpage=10
+	offset=1
+	pvalue=1.0
+	fc=0.0
+	search=""
+	csv=0
 	def dispatch(self, request, *args, **kwargs):
-		a=super(SecretJsonView, self).get(request, *args, **kwargs)
+		a=super(SecretJsonView, self).dispatch(request, *args, **kwargs)
+		u = parse_qs(request.environ['QUERY_STRING'])
+		if "csv" in request.POST:
+			my_fc=request.POST['fc']
+			my_pv=request.POST['pvalue']
+			if my_pv=='':my_pv=self.pvalue
+			if my_fc=='':my_fc=self.fc
+			self.csv=int(request.POST['csv'])
+			self.pvalue=float(my_pv)
+			self.fc=float(my_fc)
+			self.search=request.POST['search']
+			print(self.search,self.fc,self.pvalue,"HAHA")
+		else:
+			self.pvalue=float(u.get('queries[pvalue]',[1])[0])
+			self.fc=float(u.get('queries[fc]',[0])[0])
+			self.search=u.get('queries[search]',[''])[0]
+			self.page=int(u.get('page', [1])[0])
+			self.perpage=int(u.get('perPage', [10])[0])
 		cmp=(kwargs['cmd'][1:]).split(',')
 		self.columns=cmp
-		
-# 		for x in cmp:
-# 			self.columns.append(x)
-# 			self.columns.append('FC')
-# 			self.columns.append('p_value')
+
+		if self.csv: return self.get_queryset()
 		return HttpResponse(json.dumps(self.get_queryset()), content_type="application/json")
-		return(a)
 
 	def get_queryset(self):
 		p=Project.objects.get(pk=1)
-		res={}
-		glist=read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct()[:5]
-# 		print(glist)
 		res=[]
-		for gene in glist:
-			tmp_d=collections.OrderedDict()	
-			g=gene[0]
-# 			tmp_d['id']=g[1]
-			tmp_d["gene_id"]=g
+		my_res={}
+		my_cnt=0
+		for x in self.columns:
+			x=x.split(' ')
+			if len(self.search)>0:
+				my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id__icontains=self.search).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+				my_cnt = len(my_g)
+			else:
+				my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+				if gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
+					my_cnt = gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
+
+				if len(my_g)<1:
+					my_g=gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')[(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+					if gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count() > my_cnt:
+						my_cnt = gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('test_id').distinct().count()
+
+			for tmp in my_g:
+				if tmp[6] not in my_res:
+					my_res[tmp[6]]=collections.OrderedDict()
+					my_res[tmp[6]]["gene_id"]=tmp[6]
+
+				my_res[tmp[6]][(str('_'.join(x))+"_FC").lower()]=tmp[0]
+				my_res[tmp[6]][(str('_'.join(x))+"_p_value").lower()]=tmp[1]
+				my_res[tmp[6]][(str('_'.join(x))+"_fpkm_1").lower()]=tmp[2]
+				my_res[tmp[6]][(str('_'.join(x))+"_SEM_1").lower()]=tmp[3]
+				my_res[tmp[6]][(str('_'.join(x))+"_fpkm_2").lower()]=tmp[4]
+				my_res[tmp[6]][(str('_'.join(x))+"_SEM_2").lower()]=tmp[5]
+# 				res.append(tmp_d)
+
+
+
+		if self.csv>0:
+			response = HttpResponse(content_type='text/csv')
+			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+			writer = csv.writer(response)
+
 			for x in self.columns:
 				x=x.split(' ')
-				tmp=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id=g).values_list('FC','p_value')
-# 				res[g][str(' '.join(x))]=tmp[0]
-				tmp_d[(str('_'.join(x))+"_FC").lower()]=tmp[0][0]
-				tmp_d[(str('_'.join(x))+"_p_value").lower()]=tmp[0][1]
-				
-			res.append(tmp_d)
-				
-		return({"records":res,"queryRecordCount":len(res),"totalRecordCount":read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct().count() })
-		
+				if len(self.search)>0:
+					my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id__icontains=self.search).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')
+
+				else:
+					my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')
+					if len(my_g)<1:
+						my_g=gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')
+				print(len(my_g,))
+				for tmp in my_g:
+					tmp_d=[tmp[6],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]]
+					writer.writerow(tmp_d)
+
+
+			return response
+# 		print(res)
+# 		print("----")
+# 		print([ x for x in my_res.values()])
+		res=[ x for x in my_res.values()][(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
+		return({"records":res,"queryRecordCount":my_cnt,"totalRecordCount":read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct().count() })
+
 def get_head(request, *args, **kwargs):
 	cmp=(kwargs['cmd'][1:]).split(',')
 	ret="<th>gene_id</th>"
 	for x in cmp:
 		x=x.replace(' ','_').lower()
-		ret+=("<th>{}_fc</th><th>{}_p_value</th>").format(x,x)
+		ret+=("<th>{}_fc</th><th>{}_p_value</th><th>{}_fpkm_1</th><th>{}_sem_1</th><th>{}_fpkm_2</th><th>{}_sem_2</th>").format(x,x,x,x,x,x)
 	return HttpResponse("<thead>"+ret+"</thead><tbody></tbody>")
-
-# 		return read_group_tracking.objects.filter(pk=1) 
-		
-	
-# class OrderListJson(BaseDatatableView):
-# 	model = gene_exp
-# 
-# 	# define the columns that will be returned
-# 	columns = ['test_id', 'FC', 'p_value']
-# 
-# 	# define column names that will be used in sorting
-# 	# order is important and should be same as order of columns
-# 	# displayed by datatables. For non sortable columns use empty
-# 	# value like ''
-# 	order_columns = ['test_id', 'FC', 'p_value']
-# 
-# 	# set max limit of records returned, this is used to protect our site if someone tries to attack our site
-# 	# and make it return huge amount of data
-# 	max_display_length = 50
-# 
-# 	def get(self, request, *args, **kwargs):
-# 		a=super(BaseDatatableView, self).get(request, *args, **kwargs)
-# 		cmp=(kwargs['cmd'][1:]).split(',')
-# 		self.columns=['test_id']
-# 		for x in cmp:
-# 			self.columns.append(x)
-# 			self.columns.append('FC')
-# 			self.columns.append('p_value')
-# 		self.order_columns = self.columns[:]
-# 		print(self.order_columns)
-# 		return(a)
-# 
-# 	def render_column(self, row, column):
-# 	    # We want to render user as a custom column
-# 	    if column == 'user':
-# 	        return '{0} {1}'.format(row.customer_firstname, row.customer_lastname)
-# 	    else:
-# 	        return super(OrderListJson, self).render_column(row, column)
-# 
-# 	def filter_queryset(self, qs):
-# 	    # use parameters passed in POST request to filter queryset
-# 
-# 	    # simple example:
-# 	    search = self.request.POST.get('search[value]', None)
-# 	    if search:
-# 	        qs = qs.filter(cond_1=search)
-# 
-# 	    # more advanced example using extra parameters
-# 	    filter_customer = self.request.POST.get('cond_2', None)
-# 
-# # 	    if filter_customer:
-# # 	        customer_parts = filter_customer.split(' ')
-# # 	        qs_params = None
-# # 	        for part in customer_parts:
-# # 	            q = Q(customer_firstname__istartswith=part)|Q(customer_lastname__istartswith=part)
-# # 	            qs_params = qs_params | q if qs_params else q
-# # 	        qs = qs.filter(qs_params)
-# 	    return qs

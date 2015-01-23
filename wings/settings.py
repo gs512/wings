@@ -38,8 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_extensions',
     'library',
-    'dajaxice',
-    'dajax',
     'debug_toolbar',
 #     'django_datatables_view',
 
