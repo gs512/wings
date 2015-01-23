@@ -496,15 +496,22 @@ class SecretJsonView(LoginRequiredMixin,ListView):
 # 				res.append(tmp_d)
 
 
-
+		
 		if self.csv>0:
+			my_res={}
 			response = HttpResponse(content_type='text/csv')
 			response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
 
 			writer = csv.writer(response)
-
+			header=['gene_id']
 			for x in self.columns:
 				x=x.split(' ')
+				header.append(str('_'.join(x))+"_FC")
+				header.append(str('_'.join(x))+"_p_value")
+				header.append(str('_'.join(x))+"_fpkm_1")
+				header.append(str('_'.join(x))+"_sem_1")
+				header.append(str('_'.join(x))+"_fpkm_2")
+				header.append(str('_'.join(x))+"_sem_2")
 				if len(self.search)>0:
 					my_g=gene_exp.objects.filter(sample_1=x[0],sample_2=x[1],test_id__icontains=self.search).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')
 
@@ -514,14 +521,28 @@ class SecretJsonView(LoginRequiredMixin,ListView):
 						my_g=gene_exp.objects.filter(sample_1=x[1],sample_2=x[0],p_value__lte=self.pvalue).exclude(FC__range=(-self.fc,self.fc)).values_list('FC','p_value','fpkm_1','SEM_1','fpkm_2','SEM_2','test_id')
 				print(len(my_g,))
 				for tmp in my_g:
-					tmp_d=[tmp[6],tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]]
-					writer.writerow(tmp_d)
+					if tmp[6] not in my_res:
+						my_res[tmp[6]]=collections.OrderedDict()
+						my_res[tmp[6]]["gene_id"]=tmp[6]
+					my_res[tmp[6]][(str('_'.join(x))+"_FC").lower()]=tmp[0]
+					my_res[tmp[6]][(str('_'.join(x))+"_p_value").lower()]=tmp[1]
+					my_res[tmp[6]][(str('_'.join(x))+"_fpkm_1").lower()]=tmp[2]
+					my_res[tmp[6]][(str('_'.join(x))+"_SEM_1").lower()]=tmp[3]
+					my_res[tmp[6]][(str('_'.join(x))+"_fpkm_2").lower()]=tmp[4]
+					my_res[tmp[6]][(str('_'.join(x))+"_SEM_2").lower()]=tmp[5]
 
-
+			writer.writerow(header)
+			for i in [ x for x in my_res.values()]:
+				row=[i['gene_id']]
+				print(i)
+				for h in header[1:]:
+					print(h)
+					if h.lower() in i:
+						row.append(i[h.lower()])
+					else: row.append('')
+				writer.writerow(row)
+				
 			return response
-# 		print(res)
-# 		print("----")
-# 		print([ x for x in my_res.values()])
 		res=[ x for x in my_res.values()][(self.page*self.perpage)-self.perpage:self.page*(self.perpage+1)]
 		return({"records":res,"queryRecordCount":my_cnt,"totalRecordCount":read_group_tracking.objects.filter(project=p).values_list('tracking_id').distinct().count() })
 
